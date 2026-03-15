@@ -1,8 +1,12 @@
 /*
  * Click nbfs://nbhost/SystemFileSystem/Templates/Licenses/license-default.txt to change this license
- * Click nbfs://nbhost/SystemFileSystem/Templates/Classes/Main.java to edit this template
+ * Click nbfs://nbhost/SystemFileSystem/Templates/Classes/Class.java to edit this template
  */
-package ninecraftbynojang;
+
+/**
+ *
+ * @author n8bro
+ */
 import org.lwjgl.input.Keyboard;
 import org.lwjgl.opengl.Display;
 import org.lwjgl.opengl.DisplayMode;
@@ -13,7 +17,7 @@ import org.lwjgl.util.glu.GLU;
  *
  * @author n8bro
  */
-public class NinecraftByNojang {
+public class Basic3D {
     private FPcameraController fp = new FPcameraController(0f,0f,0f);
     private DisplayMode displayMode;
     public void start() {
@@ -58,7 +62,7 @@ public class NinecraftByNojang {
      * @param args the command line arguments
      */
     public static void main(String[] args) {
-        NinecraftByNojang basic = new NinecraftByNojang();
+        Basic3D basic = new Basic3D();
         basic.start();
     }
     
