@@ -172,52 +172,52 @@ public class FPcameraController {
     
     
     private void render() {
+        float s = 2.0f;
         try{
             // White side - BACK
-            glBegin(GL_POLYGON); //Substitute for quads
-            glColor3f(   1.0f,  1.0f, 1.0f );
-            glVertex3f(  0.5f, -0.5f, 0.5f );
-            glVertex3f(  0.5f,  0.5f, 0.5f );
-            glVertex3f( -0.5f,  0.5f, 0.5f );
-            glVertex3f( -0.5f, -0.5f, 0.5f );
+            glBegin(GL_POLYGON);
+            glColor3f(1.0f,  1.0f, 1.0f );
+            glVertex3f(  s, -s, s );
+            glVertex3f(  s,  s, s );
+            glVertex3f( -s,  s, s );
+            glVertex3f( -s, -s, s );
             glEnd();
 
 // Purple side - RIGHT
             glBegin(GL_POLYGON);
-            glColor3f(  1.0f,  0.0f,  1.0f );
-            glVertex3f( 0.5f, -0.5f, -0.5f );
-            glVertex3f( 0.5f,  0.5f, -0.5f );
-            glVertex3f( 0.5f,  0.5f,  0.5f );
-            glVertex3f( 0.5f, -0.5f,  0.5f );
+            glColor3f(1.0f,  0.0f,  1.0f );
+            glVertex3f( s, -s, -s );
+            glVertex3f( s,  s, -s );
+            glVertex3f( s,  s,  s );
+            glVertex3f( s, -s,  s );
             glEnd();
 
-// Green side - LEFT
+// Green side - LET
             glBegin(GL_POLYGON);
             glColor3f(   0.0f,  1.0f,  0.0f );
-            glVertex3f( -0.5f, -0.5f,  0.5f );
-            glVertex3f( -0.5f,  0.5f,  0.5f );
-            glVertex3f( -0.5f,  0.5f, -0.5f );
-            glVertex3f( -0.5f, -0.5f, -0.5f );
+            glVertex3f( -s, -s,  s );
+            glVertex3f( -s,  s,  s );
+            glVertex3f( -s,  s, -s );
+            glVertex3f( -s, -s, -s );
             glEnd();
 
 // Blue side - TOP
             glBegin(GL_POLYGON);
             glColor3f(   0.0f,  0.0f,  1.0f );
-            glVertex3f(  0.5f,  0.5f,  0.5f );
-            glVertex3f(  0.5f,  0.5f, -0.5f );
-            glVertex3f( -0.5f,  0.5f, -0.5f );
-            glVertex3f( -0.5f,  0.5f,  0.5f );
+            glVertex3f(  s,  s,  s );
+            glVertex3f(  s,  s, -s );
+            glVertex3f( -s,  s, -s );
+            glVertex3f( -s,  s,  s );
             glEnd();
 
 // Red side - BOTTOM
             glBegin(GL_POLYGON);
             glColor3f(   1.0f,  0.0f,  0.0f );
-            glVertex3f(  0.5f, -0.5f, -0.5f );
-            glVertex3f(  0.5f, -0.5f,  0.5f );
-            glVertex3f( -0.5f, -0.5f,  0.5f );
-            glVertex3f( -0.5f, -0.5f, -0.5f );
+            glVertex3f(  s, -s, -s );
+            glVertex3f(  s, -s,  s );
+            glVertex3f( -s, -s,  s );
+            glVertex3f( -s, -s, -s );
             glEnd();
-
 
         }
         catch(Exception e){
