@@ -170,15 +170,55 @@ public class FPcameraController {
     }
     
     
+    
     private void render() {
         try{
-            glBegin(GL_QUADS);
-            glColor3f(1.0f,0.0f,1.0f);
-            glVertex3f( 1.0f,-1.0f,-1.0f);
-            glVertex3f(-1.0f,-1.0f,-1.0f);
-            glVertex3f(-1.0f, 1.0f,-1.0f);
-            glVertex3f( 1.0f, 1.0f,-1.0f);
+            // White side - BACK
+            glBegin(GL_POLYGON); //Substitute for quads
+            glColor3f(   1.0f,  1.0f, 1.0f );
+            glVertex3f(  0.5f, -0.5f, 0.5f );
+            glVertex3f(  0.5f,  0.5f, 0.5f );
+            glVertex3f( -0.5f,  0.5f, 0.5f );
+            glVertex3f( -0.5f, -0.5f, 0.5f );
             glEnd();
+
+// Purple side - RIGHT
+            glBegin(GL_POLYGON);
+            glColor3f(  1.0f,  0.0f,  1.0f );
+            glVertex3f( 0.5f, -0.5f, -0.5f );
+            glVertex3f( 0.5f,  0.5f, -0.5f );
+            glVertex3f( 0.5f,  0.5f,  0.5f );
+            glVertex3f( 0.5f, -0.5f,  0.5f );
+            glEnd();
+
+// Green side - LEFT
+            glBegin(GL_POLYGON);
+            glColor3f(   0.0f,  1.0f,  0.0f );
+            glVertex3f( -0.5f, -0.5f,  0.5f );
+            glVertex3f( -0.5f,  0.5f,  0.5f );
+            glVertex3f( -0.5f,  0.5f, -0.5f );
+            glVertex3f( -0.5f, -0.5f, -0.5f );
+            glEnd();
+
+// Blue side - TOP
+            glBegin(GL_POLYGON);
+            glColor3f(   0.0f,  0.0f,  1.0f );
+            glVertex3f(  0.5f,  0.5f,  0.5f );
+            glVertex3f(  0.5f,  0.5f, -0.5f );
+            glVertex3f( -0.5f,  0.5f, -0.5f );
+            glVertex3f( -0.5f,  0.5f,  0.5f );
+            glEnd();
+
+// Red side - BOTTOM
+            glBegin(GL_POLYGON);
+            glColor3f(   1.0f,  0.0f,  0.0f );
+            glVertex3f(  0.5f, -0.5f, -0.5f );
+            glVertex3f(  0.5f, -0.5f,  0.5f );
+            glVertex3f( -0.5f, -0.5f,  0.5f );
+            glVertex3f( -0.5f, -0.5f, -0.5f );
+            glEnd();
+
+
         }
         catch(Exception e){
             //
