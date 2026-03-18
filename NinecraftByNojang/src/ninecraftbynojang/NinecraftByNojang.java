@@ -39,7 +39,7 @@ public class NinecraftByNojang {
             }
         }
         Display.setDisplayMode(displayMode);
-        Display.setTitle("Hey Mom! I am using”+ “OpenGL!!!");
+        Display.setTitle("Ninecraft");
         Display.create();
     }
     
