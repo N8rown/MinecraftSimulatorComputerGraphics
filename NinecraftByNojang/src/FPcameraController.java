@@ -185,40 +185,5 @@ public class FPcameraController {
             //
         }
     }
-    
-     private void scanlineFill(Poly p) {
-        int n = p.verts.size();
-        float ymin = Float.MAX_VALUE;
-        float ymax = Float.MIN_VALUE;
-
-        for (Vector3Float v : p.verts) {
-            ymin = Math.min(ymin, v.y);
-            ymax = Math.max(ymax, v.y);
-        }
-
-        glColor3f(p.r,p.g,p.b);
-        glBegin(GL_POINTS);
-
-        for (int y=(int)ymin; y<=ymax; y++) {
-            List<Float> xs = new ArrayList<>();
-
-            for (int i=0;i<n;i++) {
-                Vector3Float v1 = p.verts.get(i);
-                Vector3Float v2 = p.verts.get((i+1)%n);
-
-                if ((v1.y<=y && v2.y>y) || (v2.y<=y && v1.y>y)) {
-                    float x = v1.x + (y-v1.y)*(v2.x-v1.x)/(v2.y-v1.y);
-                    xs.add(x);
-                }
-            }
-
-            Collections.sort(xs);
-
-            for (int i=0;i<xs.size(); i+=2)
-                for (int x=Math.round(xs.get(i)); x<=Math.round(xs.get(i+1)); x++)
-                    glVertex2f(x,y);
-        }
-        glEnd();
-    }
 }
 
