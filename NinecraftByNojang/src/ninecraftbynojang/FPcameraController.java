@@ -106,6 +106,7 @@ public class FPcameraController {
     
     public void gameLoop()
     {
+        //FPcameraController camera = new FPcameraController(0, 0, 0);//Redundant to creation in Main loop.
         float dx, dy, time;
         float dt = 0.0f; //length of frame
         float lastTime = 0.0f; // when the last frame was
@@ -130,9 +131,9 @@ public class FPcameraController {
             //so if its a slow frame u move more then a fast frame
             //so on a slow computer you move just as fast as on a fast computer
             //controll camera yaw from x movement fromt the mouse
-            camera.yaw(dx * mouseSensitivity);
+            //camera.yaw(dx * mouseSensitivity);
             //controll camera pitch from y movement fromt the mouse
-            camera.pitch(dy * mouseSensitivity);
+            //camera.pitch(dy * mouseSensitivity);
 
             if (Keyboard.isKeyDown(Keyboard.KEY_W))//move forward
             {
@@ -157,8 +158,8 @@ public class FPcameraController {
             if (Keyboard.isKeyDown(Keyboard.KEY_E)) {
                 moveDown(movementSpeed);
             }
-            yaw(dx);
-            pitch(dy);
+            yaw(dx * mouseSensitivity);
+            pitch(dy * mouseSensitivity);
             //set the modelview matrix back to the identity
             glLoadIdentity();
             //look through the camera before you draw anything
