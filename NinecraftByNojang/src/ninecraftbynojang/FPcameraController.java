@@ -152,8 +152,8 @@ public class FPcameraController {
             if (Keyboard.isKeyDown(Keyboard.KEY_E)) {
                 moveDown(movementSpeed);
             }
-            yaw(dx);
-            pitch(dy);
+            yaw(dx * mouseSensitivity);
+            pitch(dy * mouseSensitivity);
             //set the modelview matrix back to the identity
             glLoadIdentity();
             //look through the camera before you draw anything
