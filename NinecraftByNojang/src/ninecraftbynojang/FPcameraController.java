@@ -106,12 +106,9 @@ public class FPcameraController {
     
     public void gameLoop()
     {
-        FPcameraController camera = new FPcameraController(0, 0, 0);
-        float dx = 0.0f;
-        float dy = 0.0f;
+        float dx, dy, time;
         float dt = 0.0f; //length of frame
         float lastTime = 0.0f; // when the last frame was
-        long time = 0;
         float mouseSensitivity = 0.09f;
         float movementSpeed = .35f;
         //hide the mouse
@@ -139,31 +136,33 @@ public class FPcameraController {
 
             if (Keyboard.isKeyDown(Keyboard.KEY_W))//move forward
             {
-                camera.walkForward(movementSpeed);
+                walkForward(movementSpeed);
             }
             if (Keyboard.isKeyDown(Keyboard.KEY_S))//move backwards
             {
-                camera.walkBackwards(movementSpeed);
+                walkBackwards(movementSpeed);
             }
             if (Keyboard.isKeyDown(Keyboard.KEY_A))//strafe left 
             {
-                camera.strafeLeft(movementSpeed);
+                strafeLeft(movementSpeed);
             }
             if (Keyboard.isKeyDown(Keyboard.KEY_D))//strafe right 
             {
-                camera.strafeRight(movementSpeed);
+                strafeRight(movementSpeed);
             }
             if (Keyboard.isKeyDown(Keyboard.KEY_SPACE))//move up 
             {
-                camera.moveUp(movementSpeed);
+                moveUp(movementSpeed);
             }
             if (Keyboard.isKeyDown(Keyboard.KEY_E)) {
-                camera.moveDown(movementSpeed);
+                moveDown(movementSpeed);
             }
+            yaw(dx);
+            pitch(dy);
             //set the modelview matrix back to the identity
             glLoadIdentity();
             //look through the camera before you draw anything
-            camera.lookThrough();
+            lookThrough();
             glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
             //you would draw your scene here.
             render();
@@ -222,6 +221,14 @@ public class FPcameraController {
             glVertex3f(  s, -s,  s );
             glVertex3f( -s, -s,  s );
             glVertex3f( -s, -s, -s );
+            glEnd();
+// Yellow side - FRONT           
+            glBegin(GL_POLYGON);
+            glColor3f(   1.0f,  1.0f,  0.0f );
+            glVertex3f(  -s,  s, -s );
+            glVertex3f(  -s, -s, -s );
+            glVertex3f(   s, -s, -s );
+            glVertex3f(   s,  s, -s );
             glEnd();
 
         }
