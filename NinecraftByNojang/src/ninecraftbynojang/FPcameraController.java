@@ -217,6 +217,14 @@ public class FPcameraController {
             glVertex3f( -s, -s,  s );
             glVertex3f( -s, -s, -s );
             glEnd();
+// Yellow side - FRONT           
+            glBegin(GL_POLYGON);
+            glColor3f(   1.0f,  1.0f,  0.0f );
+            glVertex3f(  -s,  s, -s );
+            glVertex3f(  -s, -s, -s );
+            glVertex3f(   s, -s, -s );
+            glVertex3f(   s,  s, -s );
+            glEnd();
 
         }
         catch(Exception e){
