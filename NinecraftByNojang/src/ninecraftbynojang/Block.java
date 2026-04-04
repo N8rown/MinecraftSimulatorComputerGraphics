@@ -13,7 +13,7 @@ public class Block {
     private BlockType Type;
     private float x,y,z;
     
-    public enum BlockType{
+    public enum BlockType {
         BlockType_Grass(0),
         BlockType_Dirt(1),
         BlockType_Water(2),
@@ -22,13 +22,13 @@ public class Block {
         BlockType_Bedrock5);
         private int BlockID;
         BlockType(int i){
-            BlockID = i;
+            BlockID=i;
         }
-        public int getID()
+        public int GetID()
         {
             return BlockID;
         }
-        public void setID(int i){
+        public void SetID(int i){
             BlockID = i;
         }
     }
