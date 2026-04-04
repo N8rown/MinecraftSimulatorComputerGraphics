@@ -14,7 +14,7 @@ import org.lwjgl.util.glu.GLU;
  * @author n8bro
  */
 public class NinecraftByNojang {
-    private FPcameraController fp = new FPcameraController(0f,0f,0f);
+    private FPcameraController fp = new FPcameraController(0f,0f,0f); //MOVE TO START METHOD?
     private DisplayMode displayMode;
     public void start() {
         try {
@@ -51,6 +51,9 @@ public class NinecraftByNojang {
         displayMode.getHeight(), 0.1f, 300.0f);
         glMatrixMode(GL_MODELVIEW);
         glHint(GL_PERSPECTIVE_CORRECTION_HINT, GL_NICEST);
+        glEnableClientState(GL_VERTEX_ARRAY);
+        glEnableClientState(GL_COLOR_ARRAY);
+        glEnable(GL_DEPTH_TEST);
     }
 
     

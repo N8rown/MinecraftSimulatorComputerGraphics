@@ -25,6 +25,9 @@ public class FPcameraController {
     //the rotation around the X axis of the camera
     private float pitch = 0.0f;
     private Vector3Float me;
+    
+    private Chunk currentChunk;// NEEDS TO BE INITIALIZED
+    
     public FPcameraController(float x, float y, float z)
     {
         //instantiate position Vector3f to the x y z params.
@@ -112,6 +115,7 @@ public class FPcameraController {
         float lastTime = 0.0f; // when the last frame was
         float mouseSensitivity = 0.09f;
         float movementSpeed = .35f;
+        currentChunk = new Chunk(0,0,0); //UNSURE IF PROPER INITIALIZATION FOR XYZ
         //hide the mouse
         Mouse.setGrabbed(true);
         // keep looping till the display window is closed the ESC key is down
@@ -120,16 +124,15 @@ public class FPcameraController {
         {
             time = Sys.getTime();
             lastTime = time;
-            //distance in mouse movement
-            //from the last getDX() call.
+            //distance in mouse movement from the last getDX() call.
             dx = Mouse.getDX();
-            //distance in mouse movement
-            //from the last getDY() call.
+            //distance in mouse movement from the last getDY() call.
             dy = Mouse.getDY();
             //when passing in the distance to move
             //we times the movementSpeed with dt this is a time scale
             //so if its a slow frame u move more then a fast frame
             //so on a slow computer you move just as fast as on a fast computer
+            
             //POSSIBLY MOVE CAMERA MOVEMENT HERE INSTEAD
 
             if (Keyboard.isKeyDown(Keyboard.KEY_W))//move forward
@@ -165,7 +168,7 @@ public class FPcameraController {
             lookThrough();
             glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
             //you would draw your scene here.
-            render();
+            currentChunk.render(); //CHANGED TO CHUNK RENDER
             //draw the buffer to the screen
             Display.update();
             Display.sync(60);
@@ -175,7 +178,7 @@ public class FPcameraController {
     
     
     
-    private void render() {
+    private void render() { //SHOULD BE GOOD TO DELETE
         float s = 2.0f;
         try{
             // White side - BACK
