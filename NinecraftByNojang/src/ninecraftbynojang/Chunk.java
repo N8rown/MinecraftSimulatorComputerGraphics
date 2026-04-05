@@ -414,9 +414,9 @@ public class Chunk {
         }
         VBOColorHandle = glGenBuffers();
         VBOVertexHandle = glGenBuffers();
-        startX = startX;
-        startY = startY;
-        startZ = startZ;
+        this.startX = startX;
+        this.startY = startY;
+        this.startZ = startZ;
         rebuildMesh(startX, startY, startZ);
     }
 }

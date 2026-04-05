@@ -109,13 +109,13 @@ public class FPcameraController {
     
     public void gameLoop()
     {
-        //FPcameraController camera = new FPcameraController(0, 0, 0);//Redundant to creation in Main loop.
+        //FPcameraController camera = new FPcameraController(0, 20, 0);//Redundant to creation in Main loop.
         float dx, dy, time;
         float dt = 0.0f; //length of frame
         float lastTime = 0.0f; // when the last frame was
         float mouseSensitivity = 0.09f;
         float movementSpeed = .35f;
-        currentChunk = new Chunk(0,0,0); //UNSURE IF PROPER INITIALIZATION FOR XYZ
+        currentChunk = new Chunk(-30,-100,-50); //UNSURE IF PROPER INITIALIZATION FOR XYZ
         //hide the mouse
         Mouse.setGrabbed(true);
         // keep looping till the display window is closed the ESC key is down
@@ -154,6 +154,9 @@ public class FPcameraController {
             if (Keyboard.isKeyDown(Keyboard.KEY_SPACE))//move up 
             {
                 moveUp(movementSpeed);
+            }
+            if (Keyboard.isKeyDown(Keyboard.KEY_LSHIFT)) {
+                moveDown(movementSpeed);
             }
             if (Keyboard.isKeyDown(Keyboard.KEY_E)) {
                 moveDown(movementSpeed);
