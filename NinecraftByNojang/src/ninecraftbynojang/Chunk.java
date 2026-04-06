@@ -40,8 +40,13 @@ public class Chunk {
         
     }
     
-    public void rebuildMesh(
-        float startX, float startY, float startZ) {
+    public void rebuildMesh( float startX, float startY, float startZ) {
+        //Noise Variables
+        int largestFeature = 28;//Height variance is between 1 and largest Feature
+        double persistence = 0.5; //between 0 and 1;
+        int seed = 100010101;
+        SimplexNoise noise = new SimplexNoise(largestFeature, persistence, seed);
+        //
         VBOColorHandle = glGenBuffers();
         VBOVertexHandle = glGenBuffers();
         VBOTextureHandle = glGenBuffers(); 
@@ -54,16 +59,25 @@ public class Chunk {
 
         for (float x = 0; x < CHUNK_SIZE; x += 1) {
             for (float z = 0; z < CHUNK_SIZE; z += 1) {
-                for(float y = 0; y < CHUNK_SIZE; y++)
+                //Could Caluculate YMax here and only iterate up to ymax in y for loop
+                for(float y = 0; y < CHUNK_SIZE; y++) //Could change chunk size to max height
                 {
-                    VertexPositionData.put(createCube(
-                        (float)(startX + x * CUBE_LENGTH),
-                        (float)(y*CUBE_LENGTH+ (int)(CHUNK_SIZE*.8)), //Why is y different then x and Z?
-                        (float) (startZ + z * CUBE_LENGTH)));
-                    VertexColorData.put(createCubeVertexCol(getCubeColor(
-                            Blocks[(int) x][(int) y][(int) z])));
-                    VertexTextureData.put(createTexCube((float) 0, (float)
-                            0,Blocks[(int)(x)][(int) (y)][(int) (z)]));
+                    //Noise
+                    //int i=(int)(startX+x*((CHUNK_SIZE-startX)/xResolution));
+                    //int k=(int)(startZ+z*((CHUNK_SIZE-startZ)/zResolution));
+                    //Get Noise is between -1 and 1 and is scaled by 100
+                    int maxHeight = (int)(startY + 
+                        (int)(100 * noise.getNoise((int)x,(int)y, (int)z)) * CUBE_LENGTH);
+                    if (y < maxHeight){
+                        VertexPositionData.put(createCube(
+                            (float)(startX + x * CUBE_LENGTH),
+                            (float)(y*CUBE_LENGTH+ (int)(CHUNK_SIZE*.8)), //Why is y different then x and Z?
+                            (float) (startZ + z * CUBE_LENGTH)));
+                        VertexColorData.put(createCubeVertexCol(getCubeColor(
+                                Blocks[(int) x][(int) y][(int) z])));
+                        VertexTextureData.put(createTexCube((float) 0, (float)
+                                0,Blocks[(int)(x)][(int) (y)][(int) (z)]));
+                    }
                 }
             }
         } 

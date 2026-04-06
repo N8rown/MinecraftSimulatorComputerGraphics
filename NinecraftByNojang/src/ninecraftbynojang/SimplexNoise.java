@@ -1,3 +1,4 @@
+package ninecraftbynojang;
 import java.util.Random;
 
 public class SimplexNoise {
