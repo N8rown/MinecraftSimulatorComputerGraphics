@@ -11,5 +11,8 @@
                 <root id="test.src.dir"/>
             </test-roots>
         </data>
+        <libraries xmlns="http://www.netbeans.org/ns/ant-project-libraries/1">
+            <definitions>C:\Users\marcu\Documents\lwjgl-2.9.2\lwjgl-2.9.2\nblibraries.properties</definitions>
+        </libraries>
     </configuration>
 </project>
