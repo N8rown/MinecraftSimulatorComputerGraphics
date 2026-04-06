@@ -109,7 +109,6 @@ public class FPcameraController {
     
     public void gameLoop()
     {
-        //FPcameraController camera = new FPcameraController(0, 20, 0);//Redundant to creation in Main loop.
         float dx, dy, time;
         float dt = 0.0f; //length of frame
         float lastTime = 0.0f; // when the last frame was
@@ -179,68 +178,5 @@ public class FPcameraController {
         Display.destroy();
     }
     
-    
-    
-    private void render() { //SHOULD BE GOOD TO DELETE
-        float s = 2.0f;
-        try{
-            // White side - BACK
-            glBegin(GL_POLYGON);
-            glColor3f(1.0f,  1.0f, 1.0f );
-            glVertex3f(  s, -s, s );
-            glVertex3f(  s,  s, s );
-            glVertex3f( -s,  s, s );
-            glVertex3f( -s, -s, s );
-            glEnd();
-
-// Purple side - RIGHT
-            glBegin(GL_POLYGON);
-            glColor3f(1.0f,  0.0f,  1.0f );
-            glVertex3f( s, -s, -s );
-            glVertex3f( s,  s, -s );
-            glVertex3f( s,  s,  s );
-            glVertex3f( s, -s,  s );
-            glEnd();
-
-// Green side - LET
-            glBegin(GL_POLYGON);
-            glColor3f(   0.0f,  1.0f,  0.0f );
-            glVertex3f( -s, -s,  s );
-            glVertex3f( -s,  s,  s );
-            glVertex3f( -s,  s, -s );
-            glVertex3f( -s, -s, -s );
-            glEnd();
-
-// Blue side - TOP
-            glBegin(GL_POLYGON);
-            glColor3f(   0.0f,  0.0f,  1.0f );
-            glVertex3f(  s,  s,  s );
-            glVertex3f(  s,  s, -s );
-            glVertex3f( -s,  s, -s );
-            glVertex3f( -s,  s,  s );
-            glEnd();
-
-// Red side - BOTTOM
-            glBegin(GL_POLYGON);
-            glColor3f(   1.0f,  0.0f,  0.0f );
-            glVertex3f(  s, -s, -s );
-            glVertex3f(  s, -s,  s );
-            glVertex3f( -s, -s,  s );
-            glVertex3f( -s, -s, -s );
-            glEnd();
-// Yellow side - FRONT           
-            glBegin(GL_POLYGON);
-            glColor3f(   1.0f,  1.0f,  0.0f );
-            glVertex3f(  -s,  s, -s );
-            glVertex3f(  -s, -s, -s );
-            glVertex3f(   s, -s, -s );
-            glVertex3f(   s,  s, -s );
-            glEnd();
-
-        }
-        catch(Exception e){
-            //
-        }
-    }
 }
 

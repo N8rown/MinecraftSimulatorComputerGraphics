@@ -142,12 +142,12 @@ public class Chunk {
             case 0: //Grass
                 return new float[]
                 {
-                    // BOTTOM QUAD(DOWN=+Y)
+                    // BOTTOM QUAD(DOWN=+Y) (TOP OF BLOCK)
                     x + offset*3, y + offset*10, 
                     x + offset*2, y + offset*10,
                     x + offset*2, y + offset*9,
                     x + offset*3, y + offset*9,
-                    // TOP!
+                    // TOP QUAD!    BOTTOM OF BLOCK
                     x + offset*3, y + offset*1,
                     x + offset*2, y + offset*1,
                     x + offset*2, y + offset*0,
@@ -382,7 +382,7 @@ public class Chunk {
 
     
     
-    public Chunk(int startX, int startY, int startZ) {
+    public Chunk(int startX, int startY, int startZ) { //Random
         try{texture = TextureLoader.getTexture("PNG",
             ResourceLoader.getResourceAsStream("terrain.png"));
         }
@@ -396,7 +396,10 @@ public class Chunk {
         for (int x = 0; x < CHUNK_SIZE; x++) {
             for (int y = 0; y < CHUNK_SIZE; y++) {
                 for (int z = 0; z < CHUNK_SIZE; z++) {
-                    if(r.nextFloat()>0.7f){
+                    if (y == 0)
+                        Blocks[x][y][z] = 
+                            new Block(Block.BlockType.BlockType_Bedrock);
+                    else if((r.nextFloat()>0.7f) || (y ==(CHUNK_SIZE - 1))){
                         Blocks[x][y][z] = 
                             new Block(Block.BlockType.BlockType_Grass);
                     }else if(r.nextFloat()>0.4f){

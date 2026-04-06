@@ -14,7 +14,7 @@ public class PerlinNoise { //Partially cnverted non java code
     private double[][] noise = new double[noiseWidth][noiseHeight];
     
     
-    
+    /*
    
     public void generateNoise()
     { 
@@ -40,6 +40,7 @@ public class PerlinNoise { //Partially cnverted non java code
         }
     }
     
-           
+     */      
+}
 
 

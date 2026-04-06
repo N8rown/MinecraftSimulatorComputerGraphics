@@ -13,14 +13,15 @@ import org.lwjgl.util.glu.GLU;
  *
  * @author n8bro
  */
-public class NinecraftByNojang {
-    private FPcameraController fp = new FPcameraController(0f,-90f,0f); //MOVE TO START METHOD? 
+public class NinecraftByNojang { 
+    private FPcameraController fp;
     private DisplayMode displayMode;
     public void start() {
+        fp = new FPcameraController(0f,-90f,0f); //Moved to start
         try {
             createWindow();
             initGL();
-            fp.gameLoop();//render();//Maybe change to chunk render
+            fp.gameLoop();//render();
         } catch (Exception e) {
             e.printStackTrace();
         }
