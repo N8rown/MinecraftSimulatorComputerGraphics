@@ -34,7 +34,7 @@ public class FPcameraController {
         position = new Vector3f(x, y, z);
         lPosition = new Vector3f(x,y,z);
         lPosition.x = 0f;
-        lPosition.y = 15f;
+        lPosition.y = 15f; //idk what this does?
         lPosition.z = 0f;
     }
     //increment the camera's current yaw rotation
@@ -160,6 +160,12 @@ public class FPcameraController {
             if (Keyboard.isKeyDown(Keyboard.KEY_E)) {
                 moveDown(movementSpeed);
             }
+            if(Mouse.isButtonDown(0))
+            {
+                //int 
+                //currentChunk.breakBlock(x, y, z);
+                
+            }
             
             yaw(dx * mouseSensitivity);
             pitch(dy * mouseSensitivity);
@@ -177,6 +183,5 @@ public class FPcameraController {
         }
         Display.destroy();
     }
-    
 }
 

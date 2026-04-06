@@ -58,8 +58,7 @@ public class Chunk {
                 {
                     VertexPositionData.put(createCube(
                         (float)(startX + x * CUBE_LENGTH),
-                        (float)(y*CUBE_LENGTH+
-                        (int)(CHUNK_SIZE*.8)),
+                        (float)(y*CUBE_LENGTH+ (int)(CHUNK_SIZE*.8)), //Why is y different then x and Z?
                         (float) (startZ + z * CUBE_LENGTH)));
                     VertexColorData.put(createCubeVertexCol(getCubeColor(
                             Blocks[(int) x][(int) y][(int) z])));
