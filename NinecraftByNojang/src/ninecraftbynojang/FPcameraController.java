@@ -25,13 +25,16 @@ public class FPcameraController {
     //the rotation around the X axis of the camera
     private float pitch = 0.0f;
     private Vector3Float me;
+    
+    private Chunk currentChunk;// NEEDS TO BE INITIALIZED
+    
     public FPcameraController(float x, float y, float z)
     {
         //instantiate position Vector3f to the x y z params.
         position = new Vector3f(x, y, z);
         lPosition = new Vector3f(x,y,z);
         lPosition.x = 0f;
-        lPosition.y = 15f;
+        lPosition.y = 15f; //idk what this does?
         lPosition.z = 0f;
     }
     //increment the camera's current yaw rotation
@@ -111,6 +114,7 @@ public class FPcameraController {
         float lastTime = 0.0f; // when the last frame was
         float mouseSensitivity = 0.09f;
         float movementSpeed = .35f;
+        currentChunk = new Chunk(-30,-100,-50); //UNSURE IF PROPER INITIALIZATION FOR XYZ
         //hide the mouse
         Mouse.setGrabbed(true);
         // keep looping till the display window is closed the ESC key is down
@@ -119,16 +123,17 @@ public class FPcameraController {
         {
             time = Sys.getTime();
             lastTime = time;
-            //distance in mouse movement
-            //from the last getDX() call.
+            //distance in mouse movement from the last getDX() call.
             dx = Mouse.getDX();
-            //distance in mouse movement
-            //from the last getDY() call.
+            //distance in mouse movement from the last getDY() call.
             dy = Mouse.getDY();
             //when passing in the distance to move
             //we times the movementSpeed with dt this is a time scale
             //so if its a slow frame u move more then a fast frame
             //so on a slow computer you move just as fast as on a fast computer
+            
+            //POSSIBLY MOVE CAMERA MOVEMENT HERE INSTEAD
+
             if (Keyboard.isKeyDown(Keyboard.KEY_W))//move forward
             {
                 walkForward(movementSpeed);
@@ -149,87 +154,34 @@ public class FPcameraController {
             {
                 moveUp(movementSpeed);
             }
+            if (Keyboard.isKeyDown(Keyboard.KEY_LSHIFT)) {
+                moveDown(movementSpeed);
+            }
             if (Keyboard.isKeyDown(Keyboard.KEY_E)) {
                 moveDown(movementSpeed);
             }
+            if(Mouse.isButtonDown(0))
+            {
+                //int 
+                //currentChunk.breakBlock(x, y, z);
+                
+            }
+            
             yaw(dx * mouseSensitivity);
             pitch(dy * mouseSensitivity);
+            
             //set the modelview matrix back to the identity
             glLoadIdentity();
             //look through the camera before you draw anything
             lookThrough();
             glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
             //you would draw your scene here.
-            render();
+            currentChunk.render(); //CHANGED TO CHUNK RENDER
             //draw the buffer to the screen
             Display.update();
             Display.sync(60);
         }
         Display.destroy();
-    }
-    
-    
-    
-    private void render() {
-        float s = 2.0f;
-        try{
-            // White side - BACK
-            glBegin(GL_POLYGON);
-            glColor3f(1.0f,  1.0f, 1.0f );
-            glVertex3f(  s, -s, s );
-            glVertex3f(  s,  s, s );
-            glVertex3f( -s,  s, s );
-            glVertex3f( -s, -s, s );
-            glEnd();
-
-// Purple side - RIGHT
-            glBegin(GL_POLYGON);
-            glColor3f(1.0f,  0.0f,  1.0f );
-            glVertex3f( s, -s, -s );
-            glVertex3f( s,  s, -s );
-            glVertex3f( s,  s,  s );
-            glVertex3f( s, -s,  s );
-            glEnd();
-
-// Green side - LET
-            glBegin(GL_POLYGON);
-            glColor3f(   0.0f,  1.0f,  0.0f );
-            glVertex3f( -s, -s,  s );
-            glVertex3f( -s,  s,  s );
-            glVertex3f( -s,  s, -s );
-            glVertex3f( -s, -s, -s );
-            glEnd();
-
-// Blue side - TOP
-            glBegin(GL_POLYGON);
-            glColor3f(   0.0f,  0.0f,  1.0f );
-            glVertex3f(  s,  s,  s );
-            glVertex3f(  s,  s, -s );
-            glVertex3f( -s,  s, -s );
-            glVertex3f( -s,  s,  s );
-            glEnd();
-
-// Red side - BOTTOM
-            glBegin(GL_POLYGON);
-            glColor3f(   1.0f,  0.0f,  0.0f );
-            glVertex3f(  s, -s, -s );
-            glVertex3f(  s, -s,  s );
-            glVertex3f( -s, -s,  s );
-            glVertex3f( -s, -s, -s );
-            glEnd();
-// Yellow side - FRONT           
-            glBegin(GL_POLYGON);
-            glColor3f(   1.0f,  1.0f,  0.0f );
-            glVertex3f(  -s,  s, -s );
-            glVertex3f(  -s, -s, -s );
-            glVertex3f(   s, -s, -s );
-            glVertex3f(   s,  s, -s );
-            glEnd();
-
-        }
-        catch(Exception e){
-            //
-        }
     }
 }
 
