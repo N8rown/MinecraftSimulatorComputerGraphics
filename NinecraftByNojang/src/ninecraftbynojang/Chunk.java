@@ -42,8 +42,8 @@ public class Chunk {
     
     public void rebuildMesh( float startX, float startY, float startZ) {
         //Noise Variables
-        int largestFeature = 100;//r.nextInt(CHUNK_SIZE);
-        double persistence = 0.8;//r.nextDouble(1); //between 0 and 1;
+        int largestFeature = r.nextInt(15, CHUNK_SIZE * 2);
+        double persistence = r.nextDouble(0.1, 1); //between 0 and 1;
         int seed = r.nextInt(1000000);
         SimplexNoise noise = new SimplexNoise(largestFeature, persistence, seed);
         //
@@ -63,7 +63,7 @@ public class Chunk {
                 //Noise
                 //Get Noise is between -largest feature and largest feature i think
                 int maxHeight = (int)(CHUNK_SIZE * 0.7 +  
-                        (Math.abs( noise.getNoise((int)x,(int)z)) * CUBE_LENGTH));
+                        ((0.5 * noise.getNoise((int)x,(int)z)) * CUBE_LENGTH));
                 for(float y = 0; y < maxHeight; y++) //Why does it start at 0  and not startY.
                 {
                     VertexPositionData.put(createCube(
