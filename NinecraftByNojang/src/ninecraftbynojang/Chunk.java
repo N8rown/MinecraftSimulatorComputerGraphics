@@ -66,6 +66,8 @@ public class Chunk {
                         ((0.5 * noise.getNoise((int)x,(int)z)) * CUBE_LENGTH));
                 for(float y = 0; y < maxHeight; y++) //Why does it start at 0  and not startY.
                 {
+                    if (y == maxHeight - 1)
+                        Blocks[(int)x][(int)y][(int)z] = new Block(Block.BlockType.BlockType_Grass);
                     VertexPositionData.put(createCube(
                             (float)(startX + x * CUBE_LENGTH),
                             (float)(startY + y * CUBE_LENGTH),//+(int)(CHUNK_SIZE*.8)),
