@@ -42,8 +42,8 @@ public class Chunk {
     
     public void rebuildMesh( float startX, float startY, float startZ) {
         //Noise Variables
-        int largestFeature = r.nextInt(CHUNK_SIZE/2 - 1);//
-        double persistence = r.nextDouble(1); //between 0 and 1;
+        int largestFeature = 100;//r.nextInt(CHUNK_SIZE);
+        double persistence = 0.8;//r.nextDouble(1); //between 0 and 1;
         int seed = r.nextInt(1000000);
         SimplexNoise noise = new SimplexNoise(largestFeature, persistence, seed);
         //
@@ -62,8 +62,8 @@ public class Chunk {
                 //Could Caluculate YMax here and only iterate up to ymax in y for loop
                 //Noise
                 //Get Noise is between -largest feature and largest feature i think
-                int maxHeight = (int)(CHUNK_SIZE - (largestFeature *2) +  
-                        (1 * noise.getNoise((int)x,(int)z)) * CUBE_LENGTH);
+                int maxHeight = (int)(CHUNK_SIZE * 0.7 +  
+                        (Math.abs( noise.getNoise((int)x,(int)z)) * CUBE_LENGTH));
                 for(float y = 0; y < maxHeight; y++) //Why does it start at 0  and not startY.
                 {
                     VertexPositionData.put(createCube(
@@ -419,7 +419,7 @@ public class Chunk {
                             Block(Block.BlockType.BlockType_Water);
                     }else{
                         Blocks[x][y][z] = new
-                            Block(Block.BlockType.BlockType_Default);
+                            Block(Block.BlockType.BlockType_Stone);
                     }
                 }
             }
