@@ -17,7 +17,7 @@ public class NinecraftByNojang {
     private FPcameraController fp;
     private DisplayMode displayMode;
     public void start() {
-        fp = new FPcameraController(0f,-90f,0f); //Moved to start
+        fp = new FPcameraController(0f,-40f,0f); //Moved to start
         try {
             createWindow();
             initGL();

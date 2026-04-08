@@ -114,7 +114,7 @@ public class FPcameraController {
         float lastTime = 0.0f; // when the last frame was
         float mouseSensitivity = 0.09f;
         float movementSpeed = .35f;
-        currentChunk = new Chunk(-30,-100,-50); //UNSURE IF PROPER INITIALIZATION FOR XYZ
+        currentChunk = new Chunk(-30,0,-50); //UNSURE IF PROPER INITIALIZATION FOR XYZ
         //hide the mouse
         Mouse.setGrabbed(true);
         // keep looping till the display window is closed the ESC key is down
