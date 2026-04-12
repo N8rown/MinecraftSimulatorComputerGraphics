@@ -42,9 +42,9 @@ public class Chunk {
     
     public void rebuildMesh( float startX, float startY, float startZ) {
         //Noise Variables
-        int largestFeature = 28;//Height variance is between 1 and largest Feature
-        double persistence = 0.5; //between 0 and 1;
-        int seed = 100010101;
+        int largestFeature = r.nextInt(15, CHUNK_SIZE * 2);
+        double persistence = r.nextDouble(0.1, 1); //between 0 and 1;
+        int seed = r.nextInt(1000000);
         SimplexNoise noise = new SimplexNoise(largestFeature, persistence, seed);
         //
         VBOColorHandle = glGenBuffers();
@@ -60,24 +60,22 @@ public class Chunk {
         for (float x = 0; x < CHUNK_SIZE; x += 1) {
             for (float z = 0; z < CHUNK_SIZE; z += 1) {
                 //Could Caluculate YMax here and only iterate up to ymax in y for loop
-                for(float y = 0; y < CHUNK_SIZE; y++) //Could change chunk size to max height
+                //Noise
+                //Get Noise is between -largest feature and largest feature i think
+                int maxHeight = (int)(CHUNK_SIZE * 0.7 +  
+                        ((0.5 * noise.getNoise((int)x,(int)z)) * CUBE_LENGTH));
+                for(float y = 0; y < maxHeight; y++) //Why does it start at 0  and not startY.
                 {
-                    //Noise
-                    //int i=(int)(startX+x*((CHUNK_SIZE-startX)/xResolution));
-                    //int k=(int)(startZ+z*((CHUNK_SIZE-startZ)/zResolution));
-                    //Get Noise is between -1 and 1 and is scaled by 100
-                    int maxHeight = (int)(startY + 
-                        (int)(100 * noise.getNoise((int)x,(int)y, (int)z)) * CUBE_LENGTH);
-                    if (y < maxHeight){
-                        VertexPositionData.put(createCube(
+                    if (y == maxHeight - 1)
+                        Blocks[(int)x][(int)y][(int)z] = new Block(Block.BlockType.BlockType_Grass);
+                    VertexPositionData.put(createCube(
                             (float)(startX + x * CUBE_LENGTH),
-                            (float)(y*CUBE_LENGTH+ (int)(CHUNK_SIZE*.8)), //Why is y different then x and Z?
+                            (float)(startY + y * CUBE_LENGTH),//+(int)(CHUNK_SIZE*.8)),
                             (float) (startZ + z * CUBE_LENGTH)));
-                        VertexColorData.put(createCubeVertexCol(getCubeColor(
-                                Blocks[(int) x][(int) y][(int) z])));
-                        VertexTextureData.put(createTexCube((float) 0, (float)
-                                0,Blocks[(int)(x)][(int) (y)][(int) (z)]));
-                    }
+                    VertexColorData.put(createCubeVertexCol(getCubeColor(
+                            Blocks[(int) x][(int) y][(int) z])));
+                    VertexTextureData.put(createTexCube((float) 0, (float)
+                             0,Blocks[(int)(x)][(int) (y)][(int) (z)]));
                 }
             }
         } 
@@ -423,7 +421,7 @@ public class Chunk {
                             Block(Block.BlockType.BlockType_Water);
                     }else{
                         Blocks[x][y][z] = new
-                            Block(Block.BlockType.BlockType_Default);
+                            Block(Block.BlockType.BlockType_Stone);
                     }
                 }
             }
