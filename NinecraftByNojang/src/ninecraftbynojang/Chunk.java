@@ -62,12 +62,13 @@ public class Chunk {
                 //Could Caluculate YMax here and only iterate up to ymax in y for loop
                 //Noise
                 //Get Noise is between -largest feature and largest feature i think
-                int maxHeight = (int)(CHUNK_SIZE * 0.7 +  
+                int maxHeight = (int)(CHUNK_SIZE +  
                         ((0.5 * noise.getNoise((int)x,(int)z)) * CUBE_LENGTH));
+                maxHeight = Math.clamp(maxHeight, 0, CHUNK_SIZE);
                 for(float y = 0; y < maxHeight; y++) //Why does it start at 0  and not startY.
                 {
-                    if (y == maxHeight - 1)
-                        Blocks[(int)x][(int)y][(int)z] = new Block(Block.BlockType.BlockType_Grass);
+//                    if (y == maxHeight - 1)
+//                        Blocks[(int)x][(int)y][(int)z] = new Block(Block.BlockType.BlockType_Grass);
                     VertexPositionData.put(createCube(
                             (float)(startX + x * CUBE_LENGTH),
                             (float)(startY + y * CUBE_LENGTH),//+(int)(CHUNK_SIZE*.8)),
@@ -410,12 +411,15 @@ public class Chunk {
                     if (y == 0)
                         Blocks[x][y][z] = 
                             new Block(Block.BlockType.BlockType_Bedrock);
-                    else if((r.nextFloat()>0.7f) || (y ==(CHUNK_SIZE - 1))){
+                    else if((y >=(CHUNK_SIZE - 2))){
                         Blocks[x][y][z] = 
                             new Block(Block.BlockType.BlockType_Grass);
-                    }else if(r.nextFloat()>0.4f){
+                    }else if(r.nextFloat()>0.7f){
                         Blocks[x][y][z] = new
                             Block(Block.BlockType.BlockType_Dirt);
+                    }else if(r.nextFloat()>0.4f){
+                        Blocks[x][y][z] = new
+                            Block(Block.BlockType.BlockType_Sand);
                     }else if(r.nextFloat()>0.2f){
                         Blocks[x][y][z] = new
                             Block(Block.BlockType.BlockType_Water);
