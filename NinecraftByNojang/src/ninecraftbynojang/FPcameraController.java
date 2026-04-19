@@ -19,7 +19,8 @@ import org.lwjgl.Sys;
 public class FPcameraController {
     //3d vector to store the camera's position in
     private Vector3f position = null;
-    private Vector3f lPosition = null;
+    //private Vector3f lPosition = null;
+    public Lighting light = null;
     //the rotation around the Y axis of the camera
     private float yaw = 0.0f;
     //the rotation around the X axis of the camera
@@ -32,10 +33,12 @@ public class FPcameraController {
     {
         //instantiate position Vector3f to the x y z params.
         position = new Vector3f(x, y, z);
+        light = new Lighting(GL_LIGHT0,x, y, z);
+        /*
         lPosition = new Vector3f(x,y,z);
         lPosition.x = 0f;
-        lPosition.y = 15f; //idk what this does?
-        lPosition.z = 0f;
+        lPosition.y = 15f; //idk what this does? //Lighting position
+        lPosition.z = 0f; */
     }
     //increment the camera's current yaw rotation
     public void yaw(float amount)
@@ -57,6 +60,14 @@ public class FPcameraController {
         float zOffset = distance * (float)Math.cos(Math.toRadians(yaw));
         position.x -= xOffset;
         position.z += zOffset;
+        //Move lighting with camera
+        /*
+        FloatBuffer lightPosition = BufferUtils.createFloatBuffer(4);
+        lightPosition.put(lPosition.x-=xOffset).put(lPosition.y).put(lPosition.z+=zOffset).put(1.0f).flip();
+        glLight(GL_LIGHT0, GL_POSITION, lightPosition);*/
+        light.updatePosition(position.x, position.y, position.z);
+
+        
     }
     
     //moves the camera backward relative to its current rotation (yaw)
@@ -66,22 +77,34 @@ public class FPcameraController {
         float zOffset = distance * (float)Math.cos(Math.toRadians(yaw));
         position.x += xOffset;
         position.z -= zOffset;
+        //Move lighting with camera
+        /* 
+        lightPosition.put(lPosition.x-=xOffset).put(lPosition.y).put(lPosition.z+=zOffset).put(1.0f).flip();
+        glLight(GL_LIGHT0, GL_POSITION, lightPosition);*/
+        light.updatePosition(position.x, position.y, position.z);
     }
     //strafes the camera left relative to its current rotation (yaw)
-    public void strafeLeft(float distance)
     {
         float xOffset = distance * (float)Math.sin(Math.toRadians(yaw-90));
         float zOffset = distance * (float)Math.cos(Math.toRadians(yaw-90));
         position.x -= xOffset;
         position.z += zOffset;
+        /*
+        FloatBuffer lightPosition = BufferUtils.createFloatBuffer(4);
+        lightPosition.put(lPosition.x-=xOffset).put(lPosition.y).put(lPosition.z+=zOffset).put(1.0f).flip();
+        glLight(GL_LIGHT0, GL_POSITION, lightPosition);*/
     }
     //strafes the camera right relative to its current rotation (yaw)
     public void strafeRight(float distance)
     {
         float xOffset = distance * (float)Math.sin(Math.toRadians(yaw+90));
-        float zOffset = distance * (float)Math.cos(Math.toRadians(yaw+90));
         position.x -= xOffset;
         position.z += zOffset;
+        /*
+        FloatBuffer lightPosition = BufferUtils.createFloatBuffer(4);
+        lightPosition.put(lPosition.x-=xOffset).put(lPosition.y).put(lPosition.z+=zOffset).put(1.0f).flip();
+        glLight(GL_LIGHT0, GL_POSITION, lightPosition);*/
+        light.updatePosition(position.x, position.y, position.z);
     }
     //moves the camera up relative to its current rotation (yaw)
     public void moveUp(float distance)
@@ -104,6 +127,12 @@ public class FPcameraController {
         glRotatef(yaw, 0.0f, 1.0f, 0.0f);
         //translate to the position vector's location
         glTranslatef(position.x, position.y, position.z);
+        //Lighting  addition
+        /*FloatBuffer lightPosition = BufferUtils.createFloatBuffer(4);
+        lightPosition.put(lPosition.x).put(lPosition.y).put(lPosition.z).put(1.0f).flip();
+        glLight(GL_LIGHT0, GL_POSITION, lightPosition);*/
+        light.updateForCamera(position.x, position.y, position.z);
+
     }
     
     
