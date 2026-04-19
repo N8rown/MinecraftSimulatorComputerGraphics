@@ -104,13 +104,15 @@ public class Chunk {
 
                     // Only render solid blocks + top water surface
                     if (type != Block.BlockType.BlockType_Water || y == SEA_LEVEL) {
-                        VertexPositionData.put(createCube(
+                        if(isFaceVisible(x,y,z,Blocks)){
+                            VertexPositionData.put(createCube(
                                 startX + x * CUBE_LENGTH,
                                 startY + y * CUBE_LENGTH,
                                 startZ + z * CUBE_LENGTH));
 
-                        VertexColorData.put(createCubeVertexCol(getCubeColor(Blocks[x][y][z])));
-                        VertexTextureData.put(createTexCube(0, 0, Blocks[x][y][z]));
+                            VertexColorData.put(createCubeVertexCol(getCubeColor(Blocks[x][y][z])));
+                            VertexTextureData.put(createTexCube(0, 0, Blocks[x][y][z]));
+                        }
                     }
                 }
             }
@@ -324,4 +326,26 @@ public class Chunk {
                 };
         }
     }
-}
+    private boolean isFaceVisible(int x, int y, int z, Block[][][] blocks) {
+        // Define directions for checking the surrounding blocks
+        Block.BlockType currentBlockType = blocks[x][y][z] != null ? blocks[x][y][z].getType() : null;
+        boolean[] faceVisible = new boolean[6]; // { top, bottom, front, back, left, right }
+
+        // Check visibility for each face
+        faceVisible[0] = (y == CHUNK_SIZE - 1 || blocks[x][y + 1][z] == null || !isSolid(blocks[x][y + 1][z]));  // Top
+        faceVisible[1] = (y == 0 || blocks[x][y - 1][z] == null || !isSolid(blocks[x][y - 1][z]));  // Bottom
+        faceVisible[2] = (z == CHUNK_SIZE - 1 || blocks[x][y][z + 1] == null || !isSolid(blocks[x][y][z + 1]));  // Front
+        faceVisible[3] = (z == 0 || blocks[x][y][z - 1] == null || !isSolid(blocks[x][y][z - 1]));  // Back
+        faceVisible[4] = (x == 0 || blocks[x - 1][y][z] == null || !isSolid(blocks[x - 1][y][z]));  // Left
+        faceVisible[5] = (x == CHUNK_SIZE - 1 || blocks[x + 1][y][z] == null || !isSolid(blocks[x + 1][y][z]));  // Right
+
+        // Any face visible?
+        return faceVisible[0] || faceVisible[1] || faceVisible[2] || faceVisible[3] || faceVisible[4] || faceVisible[5];
+    }
+
+    // Helper method to determine if a block is solid
+    private boolean isSolid(Block block) {
+        if (block == null) return false; // Air block
+        return block.getType() != Block.BlockType.BlockType_Water; // Add other solid types as needed
+    }
+ }

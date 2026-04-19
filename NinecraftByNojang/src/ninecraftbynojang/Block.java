@@ -56,4 +56,8 @@ public class Block {
     {
         return Type.GetID();
     }
+    public BlockType getType()
+    {
+        return Type;
+    }
 }
