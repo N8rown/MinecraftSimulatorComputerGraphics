@@ -83,21 +83,12 @@ public class FPcameraController {
         glLight(GL_LIGHT0, GL_POSITION, lightPosition);*/
         light.updatePosition(position.x, position.y, position.z);
     }
-    //strafes the camera left relative to its current rotation (yaw)
-    {
-        float xOffset = distance * (float)Math.sin(Math.toRadians(yaw-90));
-        float zOffset = distance * (float)Math.cos(Math.toRadians(yaw-90));
-        position.x -= xOffset;
-        position.z += zOffset;
-        /*
-        FloatBuffer lightPosition = BufferUtils.createFloatBuffer(4);
-        lightPosition.put(lPosition.x-=xOffset).put(lPosition.y).put(lPosition.z+=zOffset).put(1.0f).flip();
-        glLight(GL_LIGHT0, GL_POSITION, lightPosition);*/
-    }
+    
     //strafes the camera right relative to its current rotation (yaw)
     public void strafeRight(float distance)
     {
         float xOffset = distance * (float)Math.sin(Math.toRadians(yaw+90));
+        float zOffset = distance * (float)Math.cos(Math.toRadians(yaw-90));
         position.x -= xOffset;
         position.z += zOffset;
         /*
