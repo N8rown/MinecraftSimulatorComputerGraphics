@@ -26,7 +26,6 @@ public class FPcameraController {
     private float yaw = 0.0f;
     //the rotation around the X axis of the camera
     private float pitch = 0.0f;
-    private Vector3Float me;
     
     private Chunk currentChunk;// NEEDS TO BE INITIALIZED
     
@@ -36,8 +35,8 @@ public class FPcameraController {
         position = new Vector3f(x, y, z);
         lPosition = new Vector3f(x,y,z);
         lPosition.x = 0f;
-        lPosition.y = 15f; //idk what this does?
-        lPosition.z = 0f;
+        lPosition.y = 0f; 
+        lPosition.z = 80f;
     }
     //increment the camera's current yaw rotation
     public void yaw(float amount)
@@ -59,12 +58,6 @@ public class FPcameraController {
         float zOffset = distance * (float)Math.cos(Math.toRadians(yaw));
         position.x -= xOffset;
         position.z += zOffset;
-        //Move lighting with camera
-        FloatBuffer lightPosition = BufferUtils.createFloatBuffer(4);
-        lightPosition.put(lPosition.x-=xOffset).put(lPosition.y).put(lPosition.z+=zOffset).put(1.0f).flip();
-        glLight(GL_LIGHT0, GL_POSITION, lightPosition);
-
-        
     }
     
     //moves the camera backward relative to its current rotation (yaw)
@@ -74,10 +67,6 @@ public class FPcameraController {
         float zOffset = distance * (float)Math.cos(Math.toRadians(yaw));
         position.x += xOffset;
         position.z -= zOffset;
-        //Move lighting with camera
-        FloatBuffer lightPosition = BufferUtils.createFloatBuffer(4);
-        lightPosition.put(lPosition.x-=xOffset).put(lPosition.y).put(lPosition.z+=zOffset).put(1.0f).flip();
-        glLight(GL_LIGHT0, GL_POSITION, lightPosition);
     }
     //strafes the camera left relative to its current rotation (yaw)
     public void strafeLeft(float distance)
@@ -86,10 +75,6 @@ public class FPcameraController {
         float zOffset = distance * (float)Math.cos(Math.toRadians(yaw-90));
         position.x -= xOffset;
         position.z += zOffset;
-        //Move lighting with camera
-        FloatBuffer lightPosition = BufferUtils.createFloatBuffer(4);
-        lightPosition.put(lPosition.x-=xOffset).put(lPosition.y).put(lPosition.z+=zOffset).put(1.0f).flip();
-        glLight(GL_LIGHT0, GL_POSITION, lightPosition);
     }
     //strafes the camera right relative to its current rotation (yaw)
     public void strafeRight(float distance)
@@ -98,10 +83,6 @@ public class FPcameraController {
         float zOffset = distance * (float)Math.cos(Math.toRadians(yaw+90));
         position.x -= xOffset;
         position.z += zOffset;
-        //Move lighting with camera
-        FloatBuffer lightPosition = BufferUtils.createFloatBuffer(4);
-        lightPosition.put(lPosition.x-=xOffset).put(lPosition.y).put(lPosition.z+=zOffset).put(1.0f).flip();
-        glLight(GL_LIGHT0, GL_POSITION, lightPosition);
     }
     //moves the camera up relative to its current rotation (yaw)
     public void moveUp(float distance)
@@ -139,7 +120,8 @@ public class FPcameraController {
         float lastTime = 0.0f; // when the last frame was
         float mouseSensitivity = 0.09f;
         float movementSpeed = .35f;
-        currentChunk = new Chunk(-30,0,-50); //UNSURE IF PROPER INITIALIZATION FOR XYZ
+        currentChunk = new Chunk(0,0,0); //Each block is 2 Wide. This 
+        //Chunk is (-30 to 30, -30 to 30, -30 to 30)
         //hide the mouse
         Mouse.setGrabbed(true);
         // keep looping till the display window is closed the ESC key is down
