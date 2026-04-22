@@ -52,7 +52,7 @@ public class NinecraftByNojang { //MAIN CLASS
     }
     
     private void initGL() {
-        glClearColor(0.0f, 0.0f, 0.0f, 0.0f);
+        glClearColor(0.5f, 0.75f, 1.0f, 1.0f); // Light blue color
         glMatrixMode(GL_PROJECTION);
         glLoadIdentity();
         GLU.gluPerspective(100.0f, (float)displayMode.getWidth()/(float)
