@@ -14,13 +14,23 @@ import org.newdawn.slick.util.ResourceLoader;
 
 public class Chunk {
 
-    static final int CHUNK_SIZE = 30;
+    static final int CHUNK_SIZE = 32;
     static final int CUBE_LENGTH = 2;
 
     private Block[][][] Blocks;
-    private int VBOVertexHandle;
-    private int VBOColorHandle;
-    private int VBOTextureHandle;
+    // Solid VBOs
+    private int solidVBOVertexHandle;
+    private int solidVBOColorHandle;
+    private int solidVBOTextureHandle;
+
+    // Water VBOs
+    private int waterVBOVertexHandle;
+    private int waterVBOColorHandle;
+    private int waterVBOTextureHandle;
+
+    private int solidVertexCount;
+    private int waterVertexCount;
+    
     private Texture texture;
 
     public int startX, startY, startZ;
@@ -46,8 +56,16 @@ public class Chunk {
 
         rebuildMesh(startX, startY, startZ);
     }
+     public void rebuildMesh(float startX, float startY, float startZ) {
+        // Clean up old VBOs if rebuild is called again
+        if (solidVBOVertexHandle != 0) glDeleteBuffers(solidVBOVertexHandle);
+        if (solidVBOColorHandle != 0) glDeleteBuffers(solidVBOColorHandle);
+        if (solidVBOTextureHandle != 0) glDeleteBuffers(solidVBOTextureHandle);
 
-    public void rebuildMesh(float startX, float startY, float startZ) {
+        if (waterVBOVertexHandle != 0) glDeleteBuffers(waterVBOVertexHandle);
+        if (waterVBOColorHandle != 0) glDeleteBuffers(waterVBOColorHandle);
+        if (waterVBOTextureHandle != 0) glDeleteBuffers(waterVBOTextureHandle);
+
         // Noise setup
         int largestFeature = r.nextInt(20, CHUNK_SIZE * 2);
         double persistence = r.nextDouble(0.4, 0.75);
@@ -56,82 +74,139 @@ public class Chunk {
 
         final int SEA_LEVEL = (int) (CHUNK_SIZE * 0.45f);
 
-        VBOColorHandle = glGenBuffers();
-        VBOVertexHandle = glGenBuffers();
-        VBOTextureHandle = glGenBuffers();
+        solidVBOColorHandle = glGenBuffers();
+        solidVBOVertexHandle = glGenBuffers();
+        solidVBOTextureHandle = glGenBuffers();
 
-        FloatBuffer VertexPositionData = BufferUtils.createFloatBuffer(
-                CHUNK_SIZE * CHUNK_SIZE * CHUNK_SIZE * 6 * 12);
-        FloatBuffer VertexColorData = BufferUtils.createFloatBuffer(
-                CHUNK_SIZE * CHUNK_SIZE * CHUNK_SIZE * 6 * 12);
-        FloatBuffer VertexTextureData = BufferUtils.createFloatBuffer(
-                CHUNK_SIZE * CHUNK_SIZE * CHUNK_SIZE * 6 * 12);
+        waterVBOColorHandle = glGenBuffers();
+        waterVBOVertexHandle = glGenBuffers();
+        waterVBOTextureHandle = glGenBuffers();
 
+        int maxCubeCount = CHUNK_SIZE * CHUNK_SIZE * CHUNK_SIZE;
+        /*24 = 24 vertices per full cube = 6 faces × 4 vertices each
+          3 = x,y,z per vertex
+          4 = r,g,b,a per vertex
+          2 = u,v per vertex*/
+        FloatBuffer solidVertexPositionData = BufferUtils.createFloatBuffer(maxCubeCount * 24 * 3);
+        FloatBuffer solidVertexColorData = BufferUtils.createFloatBuffer(maxCubeCount * 24 * 4);
+        FloatBuffer solidVertexTextureData = BufferUtils.createFloatBuffer(maxCubeCount * 24 * 2);
+
+        FloatBuffer waterVertexPositionData = BufferUtils.createFloatBuffer(maxCubeCount * 24 * 3);
+        FloatBuffer waterVertexColorData = BufferUtils.createFloatBuffer(maxCubeCount * 24 * 4);
+        FloatBuffer waterVertexTextureData = BufferUtils.createFloatBuffer(maxCubeCount * 24 * 2);
+
+        solidVertexCount = 0;
+        waterVertexCount = 0;
+
+        // Clear old block references
+        for (int x = 0; x < CHUNK_SIZE; x++) {
+            for (int y = 0; y < CHUNK_SIZE; y++) {
+                for (int z = 0; z < CHUNK_SIZE; z++) {
+                    Blocks[x][y][z] = null;
+                }
+            }
+        }
+
+        // Generate terrain + water
         for (int x = 0; x < CHUNK_SIZE; x++) {
             for (int z = 0; z < CHUNK_SIZE; z++) {
-
-                // Generate surface height
                 double noiseVal = noise.getNoise(x, z);
                 int surfaceHeight = (int) (CHUNK_SIZE * 0.35 + noiseVal * CHUNK_SIZE * 0.4);
                 surfaceHeight = Math.max(5, Math.min(surfaceHeight, CHUNK_SIZE - 2));
 
-                for (int y = 0; y < CHUNK_SIZE; y++) {
+                // Generate terrain first
+                for (int y = 0; y < surfaceHeight; y++) {
                     Block.BlockType type;
 
                     if (y == 0) {
-                        type = Block.BlockType.BlockType_Bedrock;           // Bottom layer
-                    } 
-                    else if (y < surfaceHeight - 4) {
-                        type = Block.BlockType.BlockType_Stone;             // Deep stone
-                    } 
-                    else if (y < surfaceHeight - 1) {
-                        type = Block.BlockType.BlockType_Dirt;              // Dirt layer
-                    } 
-                    else if (y == surfaceHeight - 1) {
-                        // Surface layer
+                        type = Block.BlockType.BlockType_Bedrock;
+                    } else if (y < surfaceHeight - 4) {
+                        type = Block.BlockType.BlockType_Stone;
+                    } else if (y < surfaceHeight - 1) {
+                        type = Block.BlockType.BlockType_Dirt;
+                    } else {
                         if (surfaceHeight <= SEA_LEVEL + 2) {
-                            type = Block.BlockType.BlockType_Sand;          // Beach / shallow water
+                            type = Block.BlockType.BlockType_Sand;
                         } else {
-                            type = Block.BlockType.BlockType_Grass;         // Grass on top
+                            type = Block.BlockType.BlockType_Grass;
                         }
-                    } 
-                    else if (y <= SEA_LEVEL && y > surfaceHeight - 1) {
-                        type = Block.BlockType.BlockType_Water;             // Water above ground
-                    } 
-                    else {
-                        continue; // Air - don't create block
                     }
 
                     Blocks[x][y][z] = new Block(type);
                     Blocks[x][y][z].setActive(true);
+                }
 
-                    // Only render solid blocks + top water surface
-                    if (type != Block.BlockType.BlockType_Water || y == SEA_LEVEL) {
-                            VertexPositionData.put(createCube(
-                                startX + x * CUBE_LENGTH,
-                                startY + y * CUBE_LENGTH,
-                                startZ + z * CUBE_LENGTH));
-
-                            VertexColorData.put(createCubeVertexCol(getCubeColor(Blocks[x][y][z])));
-                            VertexTextureData.put(createTexCube(0, 0, Blocks[x][y][z]));
+                // Fill water downward from sea level until reaching terrain
+                // If terrain is below sea level, water occupies every air block above it
+                if (surfaceHeight <= SEA_LEVEL) {
+                    for (int y = surfaceHeight; y <= SEA_LEVEL && y < CHUNK_SIZE; y++) {
+                        if (Blocks[x][y][z] == null) {
+                            Blocks[x][y][z] = new Block(Block.BlockType.BlockType_Water);
+                            Blocks[x][y][z].setActive(true);
+                        }
                     }
                 }
             }
         }
 
-        // Upload VBOs
-        VertexPositionData.flip();
-        VertexColorData.flip();
-        VertexTextureData.flip();
+        // Build VBO buffers(Mesh the block)
+        //Back face culling could eb implemented here i believe
+        for (int x = 0; x < CHUNK_SIZE; x++) {
+            for (int y = 0; y < CHUNK_SIZE; y++) {
+                for (int z = 0; z < CHUNK_SIZE; z++) {
+                    Block block = Blocks[x][y][z];
 
-        glBindBuffer(GL_ARRAY_BUFFER, VBOVertexHandle);
-        glBufferData(GL_ARRAY_BUFFER, VertexPositionData, GL_STATIC_DRAW);
+                    if (block == null || !block.isActive()) {
+                        continue;
+                    }
 
-        glBindBuffer(GL_ARRAY_BUFFER, VBOColorHandle);
-        glBufferData(GL_ARRAY_BUFFER, VertexColorData, GL_STATIC_DRAW);
+                    float worldX = startX + x * CUBE_LENGTH;
+                    float worldY = startY + y * CUBE_LENGTH;
+                    float worldZ = startZ + z * CUBE_LENGTH;
 
-        glBindBuffer(GL_ARRAY_BUFFER, VBOTextureHandle);
-        glBufferData(GL_ARRAY_BUFFER, VertexTextureData, GL_STATIC_DRAW);
+                    if (block.getType() == Block.BlockType.BlockType_Water) {
+                        waterVertexPositionData.put(createCube(worldX, worldY, worldZ));
+                        waterVertexColorData.put(createCubeVertexCol(getCubeColor(block)));
+                        waterVertexTextureData.put(createTexCube(0, 0, block));
+                        waterVertexCount += 24;
+                    } else {
+                        solidVertexPositionData.put(createCube(worldX, worldY, worldZ));
+                        solidVertexColorData.put(createCubeVertexCol(getCubeColor(block)));
+                        solidVertexTextureData.put(createTexCube(0, 0, block));
+                        solidVertexCount += 24;
+                    }
+                }
+            }
+        }
+
+        // Flip buffers
+        solidVertexPositionData.flip();
+        solidVertexColorData.flip();
+        solidVertexTextureData.flip();
+
+        waterVertexPositionData.flip();
+        waterVertexColorData.flip();
+        waterVertexTextureData.flip();
+
+        // Upload solid buffers
+        glBindBuffer(GL_ARRAY_BUFFER, solidVBOVertexHandle);
+        glBufferData(GL_ARRAY_BUFFER, solidVertexPositionData, GL_STATIC_DRAW);
+
+        glBindBuffer(GL_ARRAY_BUFFER, solidVBOColorHandle);
+        glBufferData(GL_ARRAY_BUFFER, solidVertexColorData, GL_STATIC_DRAW);
+
+        glBindBuffer(GL_ARRAY_BUFFER, solidVBOTextureHandle);
+        glBufferData(GL_ARRAY_BUFFER, solidVertexTextureData, GL_STATIC_DRAW);
+
+        // Upload water buffers
+        glBindBuffer(GL_ARRAY_BUFFER, waterVBOVertexHandle);
+        glBufferData(GL_ARRAY_BUFFER, waterVertexPositionData, GL_STATIC_DRAW);
+
+        glBindBuffer(GL_ARRAY_BUFFER, waterVBOColorHandle);
+        glBufferData(GL_ARRAY_BUFFER, waterVertexColorData, GL_STATIC_DRAW);
+
+        glBindBuffer(GL_ARRAY_BUFFER, waterVBOTextureHandle);
+        glBufferData(GL_ARRAY_BUFFER, waterVertexTextureData, GL_STATIC_DRAW);
 
         glBindBuffer(GL_ARRAY_BUFFER, 0);
     }
@@ -139,27 +214,58 @@ public class Chunk {
     public void render() {
         glPushMatrix();
 
-        glBindBuffer(GL_ARRAY_BUFFER, VBOVertexHandle);
-        glVertexPointer(3, GL_FLOAT, 0, 0L);
-
-        glBindBuffer(GL_ARRAY_BUFFER, VBOColorHandle);
-        glColorPointer(3, GL_FLOAT, 0, 0L);
-
-        glBindBuffer(GL_ARRAY_BUFFER, VBOTextureHandle);
         glBindTexture(GL_TEXTURE_2D, texture.getTextureID());
-        glTexCoordPointer(2, GL_FLOAT, 0, 0L);
+        
+        // Render solid blocks first
+        if (solidVertexCount > 0) {
+            glBindBuffer(GL_ARRAY_BUFFER, solidVBOVertexHandle);
+            glVertexPointer(3, GL_FLOAT, 0, 0L);
 
-        glDrawArrays(GL_QUADS, 0, CHUNK_SIZE * CHUNK_SIZE * CHUNK_SIZE * 24);
+            glBindBuffer(GL_ARRAY_BUFFER, solidVBOColorHandle);
+            glColorPointer(4, GL_FLOAT, 0, 0L);
 
+            glBindBuffer(GL_ARRAY_BUFFER, solidVBOTextureHandle);
+            glTexCoordPointer(2, GL_FLOAT, 0, 0L);
+
+            glDrawArrays(GL_QUADS, 0, solidVertexCount);
+        }
+
+        // Render water second
+        if (waterVertexCount > 0) { 
+            glEnable(GL_BLEND);
+            //glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA); //Move to init
+            glDepthMask(false);
+            //glDisable(GL_CULL_FACE);
+
+            glBindBuffer(GL_ARRAY_BUFFER, waterVBOVertexHandle);
+            glVertexPointer(3, GL_FLOAT, 0, 0L);
+
+            glBindBuffer(GL_ARRAY_BUFFER, waterVBOColorHandle);
+            glColorPointer(4, GL_FLOAT, 0, 0L);
+
+            glBindBuffer(GL_ARRAY_BUFFER, waterVBOTextureHandle);
+            glTexCoordPointer(2, GL_FLOAT, 0, 0L);
+
+            glDrawArrays(GL_QUADS, 0, waterVertexCount);
+
+            glDepthMask(true);
+            glDisable(GL_BLEND);
+        }
+
+        glBindBuffer(GL_ARRAY_BUFFER, 0);
         glPopMatrix();
     }
 
+
     // ====================== Helper Methods ======================
 
-    private float[] createCubeVertexCol(float[] CubeColorArray) {
-        float[] cubeColors = new float[CubeColorArray.length * 4 * 6];
-        for (int i = 0; i < cubeColors.length; i++) {
-            cubeColors[i] = CubeColorArray[i % CubeColorArray.length];
+    private float[] createCubeVertexCol(float[] cubeColorArray) {
+        float[] cubeColors = new float[24 * 4]; // 24 vertices, RGBA
+        for (int i = 0; i < 24; i++) {
+            cubeColors[i * 4] = cubeColorArray[0];
+            cubeColors[i * 4 + 1] = cubeColorArray[1];
+            cubeColors[i * 4 + 2] = cubeColorArray[2];
+            cubeColors[i * 4 + 3] = cubeColorArray[3];
         }
         return cubeColors;
     }
@@ -201,7 +307,10 @@ public class Chunk {
     }
 
     private float[] getCubeColor(Block block) {
-        return new float[]{1.0f, 1.0f, 1.0f};
+        if (block.getType() == Block.BlockType.BlockType_Water) {
+            return new float[]{1.0f, 1.0f, 1.0f, 0.1f}; //0.45 is the transparency
+        }
+        return new float[]{1.0f, 1.0f, 1.0f, 1.0f};
     }
 
     public static float[] createTexCube(float x, float y, Block block) {

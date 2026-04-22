@@ -64,6 +64,14 @@ public class NinecraftByNojang { //MAIN CLASS
         glEnable(GL_DEPTH_TEST);
         glEnable(GL_TEXTURE_2D);
         glEnableClientState (GL_TEXTURE_COORD_ARRAY);
+        //enable transparency for water
+        //glEnable(GL_BLEND);
+        //glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+        //backface culling
+        glEnable(GL_CULL_FACE);
+        glCullFace(GL_BACK);
+        glFrontFace(GL_CW);//Clockwise
+        
         //Added Lighting code
         initLightArrays();
         glLight(GL_LIGHT0, GL_POSITION, lightPosition); //sets our light’s position
