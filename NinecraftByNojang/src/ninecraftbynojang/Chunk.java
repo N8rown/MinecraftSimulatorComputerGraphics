@@ -273,7 +273,7 @@ public class Chunk {
     public static float[] createCube(float x, float y, float z) {
         int offset = CUBE_LENGTH / 2;
         return new float[]{
-            // TOP QUAD
+            // TOP Of Block QUAD
             x + offset, y + offset, z,
             x - offset, y + offset, z,
             x - offset, y + offset, z - CUBE_LENGTH,

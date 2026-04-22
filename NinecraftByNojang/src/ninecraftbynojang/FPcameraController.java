@@ -167,6 +167,11 @@ public class FPcameraController {
             if (Keyboard.isKeyDown(Keyboard.KEY_E)) {
                 moveDown(movementSpeed);
             }
+            if (Keyboard.isKeyDown(Keyboard.KEY_CAPITAL)) {
+                movementSpeed = 0.7f;
+            }
+            else
+                movementSpeed = 0.35f;
             if(Mouse.isButtonDown(0))
             {
                 //int 
