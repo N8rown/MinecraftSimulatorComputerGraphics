@@ -28,6 +28,7 @@ public class FPcameraController {
     private float pitch = 0.0f;
     
     private Chunk currentChunk;// NEEDS TO BE INITIALIZED
+    private boolean leftMouseWasDown = false;
     
     public FPcameraController(float x, float y, float z)
     {
@@ -111,8 +112,61 @@ public class FPcameraController {
         glLight(GL_LIGHT0, GL_POSITION, lightPosition);
 
     }
-    
-    
+    private Vector3f getLookVector() {
+        float cosPitch = (float)Math.cos(Math.toRadians(pitch));
+        float sinPitch = (float)Math.sin(Math.toRadians(pitch));
+        float sinYaw = (float)Math.sin(Math.toRadians(yaw));
+        float cosYaw = (float)Math.cos(Math.toRadians(yaw));
+
+        return new Vector3f( sinYaw * cosPitch, -sinPitch, -cosYaw * cosPitch);
+    }
+
+    private void breakBlockInFront() {
+        float reach = 6.0f;
+        float step = 0.25f;
+
+        Vector3f look = getLookVector();
+
+        // Because your camera uses glTranslatef(position.x, position.y, position.z),
+        // the world-space camera location is the negative of position.
+        float camX = -position.x;
+        float camY = -position.y;
+        float camZ = -position.z;
+
+        for (float t = 0; t <= reach; t += step) {
+            float worldX = camX + look.x * t;
+            float worldY = camY + look.y * t;
+            float worldZ = camZ + look.z * t;
+
+            boolean inside = currentChunk.containsWorldPoint(worldX, worldY, worldZ);
+
+            if (!inside) {
+                continue;
+            }
+            
+            int[] blockPos = currentChunk.worldToBlock(worldX, worldY, worldZ);
+            if (blockPos == null) {
+                continue;
+            }
+
+            int bx = blockPos[0];
+            int by = blockPos[1];
+            int bz = blockPos[2];
+            Block block = currentChunk.getBlock(bx, by, bz);
+
+            if (block == null) {
+                continue;
+            }
+
+            if (block.isActive()) {
+                boolean broken = currentChunk.breakBlock(bx, by, bz);
+
+                if (broken) {
+                    return;
+                }
+            }
+        }
+    }
     public void gameLoop()
     {
         float dx, dy, time;
@@ -172,12 +226,11 @@ public class FPcameraController {
             }
             else
                 movementSpeed = 0.35f;
-            if(Mouse.isButtonDown(0))
-            {
-                //int 
-                //currentChunk.breakBlock(x, y, z);
-                
+            boolean leftMouseDown = Mouse.isButtonDown(0);
+            if (leftMouseDown && !leftMouseWasDown) {
+                breakBlockInFront();
             }
+            leftMouseWasDown = leftMouseDown;
             
             yaw(dx * mouseSensitivity);
             pitch(dy * mouseSensitivity);

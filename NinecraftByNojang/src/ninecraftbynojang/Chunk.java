@@ -34,15 +34,16 @@ public class Chunk {
     private Texture texture;
 
     public int startX, startY, startZ;
-    public int maxX, maxZ;
+    public int maxX, maxY, maxZ;
     private Random r;
 
     public Chunk(int startX, int startY, int startZ) {
         this.startX = startX;
         this.startY = startY;
         this.startZ = startZ;
-        this.maxX = startX - CHUNK_SIZE * CUBE_LENGTH;
-        this.maxZ = startZ - CHUNK_SIZE * CUBE_LENGTH;
+        this.maxX = startX + CHUNK_SIZE * CUBE_LENGTH;
+        this.maxY = startY + CHUNK_SIZE * CUBE_LENGTH;
+        this.maxZ = startZ + CHUNK_SIZE * CUBE_LENGTH;
         
         r = new Random();
         Blocks = new Block[CHUNK_SIZE][CHUNK_SIZE][CHUNK_SIZE];
@@ -54,18 +55,10 @@ public class Chunk {
             System.out.println("Texture loading error: " + e.getMessage());
         }
 
-        rebuildMesh(startX, startY, startZ);
+        buildChunk(startX, startY, startZ);
+        rebuildMesh();
     }
-     public void rebuildMesh(float startX, float startY, float startZ) {
-        // Clean up old VBOs if rebuild is called again
-        if (solidVBOVertexHandle != 0) glDeleteBuffers(solidVBOVertexHandle);
-        if (solidVBOColorHandle != 0) glDeleteBuffers(solidVBOColorHandle);
-        if (solidVBOTextureHandle != 0) glDeleteBuffers(solidVBOTextureHandle);
-
-        if (waterVBOVertexHandle != 0) glDeleteBuffers(waterVBOVertexHandle);
-        if (waterVBOColorHandle != 0) glDeleteBuffers(waterVBOColorHandle);
-        if (waterVBOTextureHandle != 0) glDeleteBuffers(waterVBOTextureHandle);
-
+     public void buildChunk(float startX, float startY, float startZ) {
         // Noise setup
         int largestFeature = r.nextInt(20, CHUNK_SIZE * 2);
         double persistence = r.nextDouble(0.4, 0.75);
@@ -74,29 +67,7 @@ public class Chunk {
 
         final int SEA_LEVEL = (int) (CHUNK_SIZE * 0.45f);
 
-        solidVBOColorHandle = glGenBuffers();
-        solidVBOVertexHandle = glGenBuffers();
-        solidVBOTextureHandle = glGenBuffers();
-
-        waterVBOColorHandle = glGenBuffers();
-        waterVBOVertexHandle = glGenBuffers();
-        waterVBOTextureHandle = glGenBuffers();
-
-        int maxCubeCount = CHUNK_SIZE * CHUNK_SIZE * CHUNK_SIZE;
-        /*24 = 24 vertices per full cube = 6 faces × 4 vertices each
-          3 = x,y,z per vertex
-          4 = r,g,b,a per vertex
-          2 = u,v per vertex*/
-        FloatBuffer solidVertexPositionData = BufferUtils.createFloatBuffer(maxCubeCount * 24 * 3);
-        FloatBuffer solidVertexColorData = BufferUtils.createFloatBuffer(maxCubeCount * 24 * 4);
-        FloatBuffer solidVertexTextureData = BufferUtils.createFloatBuffer(maxCubeCount * 24 * 2);
-
-        FloatBuffer waterVertexPositionData = BufferUtils.createFloatBuffer(maxCubeCount * 24 * 3);
-        FloatBuffer waterVertexColorData = BufferUtils.createFloatBuffer(maxCubeCount * 24 * 4);
-        FloatBuffer waterVertexTextureData = BufferUtils.createFloatBuffer(maxCubeCount * 24 * 2);
-
-        solidVertexCount = 0;
-        waterVertexCount = 0;
+        
 
         // Clear old block references
         for (int x = 0; x < CHUNK_SIZE; x++) {
@@ -148,7 +119,41 @@ public class Chunk {
                 }
             }
         }
+    }
+    public void rebuildMesh()
+    {
+        // Clean up old VBOs if rebuild is called again
+        if (solidVBOVertexHandle != 0) glDeleteBuffers(solidVBOVertexHandle);
+        if (solidVBOColorHandle != 0) glDeleteBuffers(solidVBOColorHandle);
+        if (solidVBOTextureHandle != 0) glDeleteBuffers(solidVBOTextureHandle);
 
+        if (waterVBOVertexHandle != 0) glDeleteBuffers(waterVBOVertexHandle);
+        if (waterVBOColorHandle != 0) glDeleteBuffers(waterVBOColorHandle);
+        if (waterVBOTextureHandle != 0) glDeleteBuffers(waterVBOTextureHandle);
+        
+        solidVBOColorHandle = glGenBuffers();
+        solidVBOVertexHandle = glGenBuffers();
+        solidVBOTextureHandle = glGenBuffers();
+
+        waterVBOColorHandle = glGenBuffers();
+        waterVBOVertexHandle = glGenBuffers();
+        waterVBOTextureHandle = glGenBuffers();
+
+        int maxCubeCount = CHUNK_SIZE * CHUNK_SIZE * CHUNK_SIZE;
+        /*24 = 24 vertices per full cube = 6 faces × 4 vertices each
+          3 = x,y,z per vertex
+          4 = r,g,b,a per vertex
+          2 = u,v per vertex*/
+        FloatBuffer solidVertexPositionData = BufferUtils.createFloatBuffer(maxCubeCount * 24 * 3);
+        FloatBuffer solidVertexColorData = BufferUtils.createFloatBuffer(maxCubeCount * 24 * 4);
+        FloatBuffer solidVertexTextureData = BufferUtils.createFloatBuffer(maxCubeCount * 24 * 2);
+
+        FloatBuffer waterVertexPositionData = BufferUtils.createFloatBuffer(maxCubeCount * 24 * 3);
+        FloatBuffer waterVertexColorData = BufferUtils.createFloatBuffer(maxCubeCount * 24 * 4);
+        FloatBuffer waterVertexTextureData = BufferUtils.createFloatBuffer(maxCubeCount * 24 * 2);
+
+        solidVertexCount = 0;
+        waterVertexCount = 0;
         // Build VBO buffers(Mesh the block)
         //Back face culling could eb implemented here i believe
         for (int x = 0; x < CHUNK_SIZE; x++) {
@@ -436,4 +441,49 @@ public class Chunk {
                 };
         }
     }
- }
+    public boolean containsWorldPoint(float worldX, float worldY, float worldZ) {
+        float minX = Math.min(startX, startX + (CHUNK_SIZE - 1) * CUBE_LENGTH) - CUBE_LENGTH / 2.0f;
+        float maxXv = Math.max(startX, startX + (CHUNK_SIZE - 1) * CUBE_LENGTH) + CUBE_LENGTH / 2.0f;
+
+        float minY = Math.min(startY, startY + (CHUNK_SIZE - 1) * CUBE_LENGTH) - CUBE_LENGTH / 2.0f;
+        float maxYv = Math.max(startY, startY + (CHUNK_SIZE - 1) * CUBE_LENGTH) + CUBE_LENGTH / 2.0f;
+
+        float minZ = Math.min(startZ, startZ + (CHUNK_SIZE - 1) * CUBE_LENGTH) - CUBE_LENGTH / 2.0f;
+        float maxZv = Math.max(startZ, startZ + (CHUNK_SIZE - 1) * CUBE_LENGTH) + CUBE_LENGTH / 2.0f;
+
+        boolean result =
+            worldX >= minX && worldX <= maxXv &&
+            worldY >= minY && worldY <= maxYv &&
+            worldZ >= minZ && worldZ <= maxZv;
+        return result;
+    }
+    public int[] worldToBlock(float worldX, float worldY, float worldZ) {
+        if (!containsWorldPoint(worldX, worldY, worldZ)) {
+            return null;
+        }
+
+        int blockX = Math.round((worldX - startX) / (float)CUBE_LENGTH);
+        int blockY = Math.round((worldY - startY) / (float)CUBE_LENGTH);
+        int blockZ = Math.round((worldZ - startZ) / (float)CUBE_LENGTH);
+
+        if (blockX < 0 || blockX >= CHUNK_SIZE ||
+            blockY < 0 || blockY >= CHUNK_SIZE ||
+            blockZ < 0 || blockZ >= CHUNK_SIZE) 
+        {
+            return null;
+        }
+        return new int[]{blockX, blockY, blockZ};
+    }
+    
+    public boolean breakBlock(int x, int y, int z) {
+        Blocks[x][y][z] = null;
+        rebuildMesh();
+        return true;
+    }
+    public Block getBlock(int x, int y, int z) {
+        if (x < 0 || x >= CHUNK_SIZE || y < 0 || y >= CHUNK_SIZE || z < 0 || z >= CHUNK_SIZE) {
+            return null;
+        }
+        return Blocks[x][y][z];
+    }
+}
