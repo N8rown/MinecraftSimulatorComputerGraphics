@@ -486,4 +486,19 @@ public class Chunk {
         }
         return Blocks[x][y][z];
     }
+    
+    public boolean placeBlock(int x, int y, int z, Block.BlockType type) {
+    if (x < 0 || x >= CHUNK_SIZE || y < 0 || y >= CHUNK_SIZE || z < 0 || z >= CHUNK_SIZE) {
+        return false;
+    }
+    
+    // Only place if position is empty
+    if (Blocks[x][y][z] == null) {
+        Blocks[x][y][z] = new Block(type);
+        Blocks[x][y][z].setActive(true);
+        rebuildMesh();
+        return true;
+    }
+    return false;
+}
 }

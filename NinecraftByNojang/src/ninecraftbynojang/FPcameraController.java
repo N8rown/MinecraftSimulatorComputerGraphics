@@ -29,6 +29,20 @@ public class FPcameraController {
     
     private Chunk currentChunk;// NEEDS TO BE INITIALIZED
     private boolean leftMouseWasDown = false;
+    private boolean rightMouseWasDown = false;
+    
+    // Physics variables
+    private float velocityY = 0.0f;
+    private boolean isOnGround = false;
+    private boolean isInWater = false;
+    private boolean isFlying = false; // Fly mode toggle
+    private static final float GRAVITY = 9.8f;
+    private static final float JUMP_POWER = 5.5f;
+    private static final float WATER_BUOYANCY = 4.0f;
+    private static final float WATER_DRAG = 0.95f;
+    private static final float FLY_SPEED = 8.0f;
+    private static final float PLAYER_HEIGHT = 1.6f;
+    private static final float PLAYER_WIDTH = 0.6f;
     
     public FPcameraController(float x, float y, float z)
     {
@@ -38,6 +52,8 @@ public class FPcameraController {
         lPosition.x = 0f;
         lPosition.y = 0f; 
         lPosition.z = 80f;
+        velocityY = 0; // Start with no velocity
+        isFlying = true; // Start in fly mode to avoid being stuck in blocks
     }
     //increment the camera's current yaw rotation
     public void yaw(float amount)
@@ -50,6 +66,9 @@ public class FPcameraController {
     {
         //increment the pitch by the amount param
         pitch -= amount;
+        // Limit pitch to prevent over-rotation
+        if (pitch > 90) pitch = 90;
+        if (pitch < -90) pitch = -90;
     }
     
     //moves the camera forward relative to its current rotation (yaw)
@@ -57,8 +76,11 @@ public class FPcameraController {
     {
         float xOffset = distance * (float)Math.sin(Math.toRadians(yaw));
         float zOffset = distance * (float)Math.cos(Math.toRadians(yaw));
-        position.x -= xOffset;
-        position.z += zOffset;
+        Vector3f newPos = new Vector3f(position.x - xOffset, position.y, position.z + zOffset);
+        if (isFlying || checkCollision(newPos)) {
+            position.x -= xOffset;
+            position.z += zOffset;
+        }
     }
     
     //moves the camera backward relative to its current rotation (yaw)
@@ -66,34 +88,213 @@ public class FPcameraController {
     {   
         float xOffset = distance * (float)Math.sin(Math.toRadians(yaw));
         float zOffset = distance * (float)Math.cos(Math.toRadians(yaw));
-        position.x += xOffset;
-        position.z -= zOffset;
+        Vector3f newPos = new Vector3f(position.x + xOffset, position.y, position.z - zOffset);
+        if (isFlying || checkCollision(newPos)) {
+            position.x += xOffset;
+            position.z -= zOffset;
+        }
     }
     //strafes the camera left relative to its current rotation (yaw)
     public void strafeLeft(float distance)
     {
         float xOffset = distance * (float)Math.sin(Math.toRadians(yaw-90));
         float zOffset = distance * (float)Math.cos(Math.toRadians(yaw-90));
-        position.x -= xOffset;
-        position.z += zOffset;
+        Vector3f newPos = new Vector3f(position.x - xOffset, position.y, position.z + zOffset);
+        if (isFlying || checkCollision(newPos)) {
+            position.x -= xOffset;
+            position.z += zOffset;
+        }
     }
     //strafes the camera right relative to its current rotation (yaw)
     public void strafeRight(float distance)
     {
         float xOffset = distance * (float)Math.sin(Math.toRadians(yaw+90));
         float zOffset = distance * (float)Math.cos(Math.toRadians(yaw+90));
-        position.x -= xOffset;
-        position.z += zOffset;
+        Vector3f newPos = new Vector3f(position.x - xOffset, position.y, position.z + zOffset);
+        if (isFlying || checkCollision(newPos)) {
+            position.x -= xOffset;
+            position.z += zOffset;
+        }
     }
-    //moves the camera up relative to its current rotation (yaw)
+    
+    // Fly up (decrease Y)
+    public void flyUp(float distance)
+    {
+        Vector3f newPos = new Vector3f(position.x, position.y - distance, position.z);
+        if (isFlying || checkCollision(newPos)) {
+            position.y -= distance;
+            if (!isFlying) velocityY = 0;
+        }
+    }
+    
+    // Fly down (increase Y)
+    public void flyDown(float distance)
+    {
+        Vector3f newPos = new Vector3f(position.x, position.y + distance, position.z);
+        if (isFlying || checkCollision(newPos)) {
+            position.y += distance;
+            if (!isFlying) velocityY = 0;
+        }
+    }
+    
+    //moves the camera up (for water swimming)
     public void moveUp(float distance)
     {
-        position.y -= distance;
+        Vector3f newPos = new Vector3f(position.x, position.y - distance, position.z);
+        if (checkCollision(newPos)) {
+            position.y -= distance;
+            velocityY = 0;
+        }
     }
-    //moves the camera down
+    
+    //moves the camera down (for water swimming)
     public void moveDown(float distance)
     {
-        position.y += distance;
+        Vector3f newPos = new Vector3f(position.x, position.y + distance, position.z);
+        if (checkCollision(newPos)) {
+            position.y += distance;
+            velocityY = 0;
+        }
+    }
+    
+    public void applyGravity(float deltaTime) {
+        // Skip gravity if flying
+        if (isFlying) {
+            velocityY = 0;
+            isOnGround = false;
+            return;
+        }
+        
+        // Check if player is in water
+        checkWaterStatus();
+        
+        if (isInWater) {
+            // In water: float upward (decrease Y)
+            velocityY -= WATER_BUOYANCY * deltaTime;
+            velocityY *= WATER_DRAG;
+            
+            Vector3f newPos = new Vector3f(position.x, position.y + velocityY * deltaTime, position.z);
+            if (checkCollision(newPos)) {
+                position.y += velocityY * deltaTime;
+            } else {
+                velocityY = 0;
+            }
+        } else {
+            // Normal gravity: pull downward (increase Y)
+            velocityY += GRAVITY * deltaTime;
+            
+            Vector3f newPos = new Vector3f(position.x, position.y + velocityY * deltaTime, position.z);
+            if (checkCollision(newPos)) {
+                position.y += velocityY * deltaTime;
+                isOnGround = false;
+            } else {
+                // Hit something (ground or ceiling)
+                velocityY = 0;
+                isOnGround = true;
+            }
+        }
+        
+        // Clamp Y position to reasonable bounds
+        if (position.y > 100) position.y = 100;
+        if (position.y < -100) position.y = -100;
+    }
+    
+    private void checkWaterStatus() {
+        // Check around player's position for water blocks
+        float checkY = -position.y; // Convert to block coordinate space
+        
+        // Get block at player's feet and head positions
+        Vector3f feetPos = new Vector3f(-position.x, -position.y, -position.z);
+        Vector3f headPos = new Vector3f(-position.x, -position.y + PLAYER_HEIGHT, -position.z);
+        
+        isInWater = false;
+        
+        if (currentChunk.containsWorldPoint(feetPos.x, feetPos.y, feetPos.z)) {
+            int[] blockPos = currentChunk.worldToBlock(feetPos.x, feetPos.y, feetPos.z);
+            if (blockPos != null) {
+                Block block = currentChunk.getBlock(blockPos[0], blockPos[1], blockPos[2]);
+                if (block != null && block.getType() == Block.BlockType.BlockType_Water) {
+                    isInWater = true;
+                }
+            }
+        }
+        
+        if (!isInWater && currentChunk.containsWorldPoint(headPos.x, headPos.y, headPos.z)) {
+            int[] blockPos = currentChunk.worldToBlock(headPos.x, headPos.y, headPos.z);
+            if (blockPos != null) {
+                Block block = currentChunk.getBlock(blockPos[0], blockPos[1], blockPos[2]);
+                if (block != null && block.getType() == Block.BlockType.BlockType_Water) {
+                    isInWater = true;
+                }
+            }
+        }
+    }
+    
+    public void jump() {
+        if (isFlying) {
+            // In fly mode, jump toggles flying up
+            flyUp(FLY_SPEED * 0.1f);
+        } else if (isOnGround && !isInWater) {
+            velocityY = -JUMP_POWER; // Negative because up is negative Y
+            isOnGround = false;
+        } else if (isInWater) {
+            // Can "swim up" in water
+            velocityY = -JUMP_POWER * 0.7f;
+        }
+    }
+    
+    public void toggleFlyMode() {
+        isFlying = !isFlying;
+        if (isFlying) {
+            velocityY = 0; // Reset velocity when entering fly mode
+            System.out.println("Fly mode ON");
+        } else {
+            System.out.println("Fly mode OFF");
+        }
+    }
+    
+    private boolean checkCollision(Vector3f newPosition) {
+        // Skip collision detection in fly mode
+        if (isFlying) return true;
+        
+        // Check collision with blocks using a bounding box
+        float halfWidth = PLAYER_WIDTH / 2;
+        
+        // Convert to world block coordinates (positive Y is down)
+        float playerBottomY = -newPosition.y - PLAYER_HEIGHT; // Bottom of player in world coords
+        float playerTopY = -newPosition.y; // Top of player in world coords
+        
+        // Check corners and centers of player bounding box
+        Vector3f[] checkPoints = {
+            // Bottom corners
+            new Vector3f(-newPosition.x + halfWidth, playerBottomY, -newPosition.z + halfWidth),
+            new Vector3f(-newPosition.x - halfWidth, playerBottomY, -newPosition.z + halfWidth),
+            new Vector3f(-newPosition.x + halfWidth, playerBottomY, -newPosition.z - halfWidth),
+            new Vector3f(-newPosition.x - halfWidth, playerBottomY, -newPosition.z - halfWidth),
+            // Top corners
+            new Vector3f(-newPosition.x + halfWidth, playerTopY, -newPosition.z + halfWidth),
+            new Vector3f(-newPosition.x - halfWidth, playerTopY, -newPosition.z + halfWidth),
+            new Vector3f(-newPosition.x + halfWidth, playerTopY, -newPosition.z - halfWidth),
+            new Vector3f(-newPosition.x - halfWidth, playerTopY, -newPosition.z - halfWidth),
+            // Centers for better detection
+            new Vector3f(-newPosition.x, playerBottomY + PLAYER_HEIGHT/2, -newPosition.z),
+            new Vector3f(-newPosition.x, playerBottomY, -newPosition.z),
+            new Vector3f(-newPosition.x, playerTopY, -newPosition.z)
+        };
+        
+        for (Vector3f point : checkPoints) {
+            if (currentChunk.containsWorldPoint(point.x, point.y, point.z)) {
+                int[] blockPos = currentChunk.worldToBlock(point.x, point.y, point.z);
+                if (blockPos != null) {
+                    Block block = currentChunk.getBlock(blockPos[0], blockPos[1], blockPos[2]);
+                    if (block != null && block.isActive() && block.getType() != Block.BlockType.BlockType_Water) {
+                        return false;
+                    }
+                }
+            }
+        }
+        
+        return true;
     }
     
     //translates and rotate the matrix so that it looks through the camera
@@ -112,6 +313,7 @@ public class FPcameraController {
         glLight(GL_LIGHT0, GL_POSITION, lightPosition);
 
     }
+    
     private Vector3f getLookVector() {
         float cosPitch = (float)Math.cos(Math.toRadians(pitch));
         float sinPitch = (float)Math.sin(Math.toRadians(pitch));
@@ -122,13 +324,12 @@ public class FPcameraController {
     }
 
     private void breakBlockInFront() {
-        float reach = 6.0f;
-        float step = 0.25f;
+        float reach = 5.0f;
+        float step = 0.2f;
 
         Vector3f look = getLookVector();
 
-        // Because your camera uses glTranslatef(position.x, position.y, position.z),
-        // the world-space camera location is the negative of position.
+        // Camera position in world space (positive Y is down)
         float camX = -position.x;
         float camY = -position.y;
         float camZ = -position.z;
@@ -138,115 +339,196 @@ public class FPcameraController {
             float worldY = camY + look.y * t;
             float worldZ = camZ + look.z * t;
 
-            boolean inside = currentChunk.containsWorldPoint(worldX, worldY, worldZ);
-
-            if (!inside) {
-                continue;
-            }
-            
-            int[] blockPos = currentChunk.worldToBlock(worldX, worldY, worldZ);
-            if (blockPos == null) {
-                continue;
-            }
-
-            int bx = blockPos[0];
-            int by = blockPos[1];
-            int bz = blockPos[2];
-            Block block = currentChunk.getBlock(bx, by, bz);
-
-            if (block == null) {
-                continue;
-            }
-
-            if (block.isActive()) {
-                boolean broken = currentChunk.breakBlock(bx, by, bz);
-
-                if (broken) {
-                    return;
+            if (currentChunk.containsWorldPoint(worldX, worldY, worldZ)) {
+                int[] blockPos = currentChunk.worldToBlock(worldX, worldY, worldZ);
+                if (blockPos != null) {
+                    Block block = currentChunk.getBlock(blockPos[0], blockPos[1], blockPos[2]);
+                    if (block != null && block.isActive() && block.getType() != Block.BlockType.BlockType_Water) {
+                        currentChunk.breakBlock(blockPos[0], blockPos[1], blockPos[2]);
+                        return;
+                    }
                 }
             }
         }
     }
+    
+    private void placeBlockInFront() {
+        float reach = 5.0f;
+        float step = 0.2f;
+
+        Vector3f look = getLookVector();
+
+        float camX = -position.x;
+        float camY = -position.y;
+        float camZ = -position.z;
+        
+        float lastValidWorldX = camX;
+        float lastValidWorldY = camY;
+        float lastValidWorldZ = camZ;
+        boolean hitBlock = false;
+
+        for (float t = 0; t <= reach; t += step) {
+            float worldX = camX + look.x * t;
+            float worldY = camY + look.y * t;
+            float worldZ = camZ + look.z * t;
+
+            if (currentChunk.containsWorldPoint(worldX, worldY, worldZ)) {
+                int[] blockPos = currentChunk.worldToBlock(worldX, worldY, worldZ);
+                if (blockPos != null) {
+                    Block block = currentChunk.getBlock(blockPos[0], blockPos[1], blockPos[2]);
+                    if (block != null && block.isActive() && block.getType() != Block.BlockType.BlockType_Water) {
+                        hitBlock = true;
+                        break;
+                    }
+                }
+                lastValidWorldX = worldX;
+                lastValidWorldY = worldY;
+                lastValidWorldZ = worldZ;
+            } else {
+                break;
+            }
+        }
+        
+        if (hitBlock) {
+            int[] placePos = currentChunk.worldToBlock(lastValidWorldX, lastValidWorldY, lastValidWorldZ);
+            if (placePos != null) {
+                currentChunk.placeBlock(placePos[0], placePos[1], placePos[2], Block.BlockType.BlockType_Grass);
+            }
+        }
+    }
+    
     public void gameLoop()
     {
-        float dx, dy, time;
-        float dt = 0.0f; //length of frame
-        float lastTime = 0.0f; // when the last frame was
+        float dx, dy;
+        float dt = 0.0f;
+        float lastTime = 0.0f;
+        float currentTime;
         float mouseSensitivity = 0.09f;
-        float movementSpeed = .35f;
-        currentChunk = new Chunk(0,0,0); //Each block is 2 Wide. This 
-        //Chunk is (-30 to 30, -30 to 30, -30 to 30)
-        //hide the mouse
+        float movementSpeed = 5.0f;
+        
+        currentChunk = new Chunk(0,0,0);
+        
+        // Start at a higher position to avoid being inside blocks
+        position.y = -50;
+        position.x = 0;
+        position.z = 0;
+        
         Mouse.setGrabbed(true);
-        // keep looping till the display window is closed the ESC key is down
+        
+        System.out.println("=== CONTROLS ===");
+        System.out.println("F - Toggle Fly Mode");
+        System.out.println("Space - Jump / Fly Up");
+        System.out.println("Shift - Sprint / Fly Down");
+        System.out.println("WASD - Move");
+        System.out.println("Left Click - Break Block");
+        System.out.println("Right Click - Place Block");
+        System.out.println("=================");
+        
         while (!Display.isCloseRequested() &&
                 !Keyboard.isKeyDown(Keyboard.KEY_ESCAPE))
         {
-            time = Sys.getTime();
-            lastTime = time;
-            //distance in mouse movement from the last getDX() call.
-            dx = Mouse.getDX();
-            //distance in mouse movement from the last getDY() call.
-            dy = Mouse.getDY();
-            //when passing in the distance to move
-            //we times the movementSpeed with dt this is a time scale
-            //so if its a slow frame u move more then a fast frame
-            //so on a slow computer you move just as fast as on a fast computer
+            currentTime = Sys.getTime();
+            dt = (currentTime - lastTime) / 1000.0f;
+            if (dt > 0.05f) dt = 0.05f;
+            lastTime = currentTime;
             
-            //POSSIBLY MOVE CAMERA MOVEMENT HERE INSTEAD
-
-            if (Keyboard.isKeyDown(Keyboard.KEY_W))//move forward
-            {
-                walkForward(movementSpeed);
+            dx = Mouse.getDX();
+            dy = Mouse.getDY();
+            
+            // Toggle fly mode with F key
+            if (Keyboard.isKeyDown(Keyboard.KEY_F) && !Keyboard.isKeyDown(Keyboard.KEY_F)) {
+                // This would trigger once, but we need a proper key press handler
             }
-            if (Keyboard.isKeyDown(Keyboard.KEY_S))//move backwards
-            {
-                walkBackwards(movementSpeed);
+            
+            float currentSpeed = movementSpeed;
+            if (!isFlying && isInWater) {
+                currentSpeed = movementSpeed * 0.5f;
+            } else if (isFlying) {
+                currentSpeed = FLY_SPEED;
             }
-            if (Keyboard.isKeyDown(Keyboard.KEY_A))//strafe left 
-            {
-                strafeLeft(movementSpeed);
+            
+            float moveAmount = currentSpeed * dt;
+            
+            // Movement
+            if (Keyboard.isKeyDown(Keyboard.KEY_W)) {
+                walkForward(moveAmount);
             }
-            if (Keyboard.isKeyDown(Keyboard.KEY_D))//strafe right 
-            {
-                strafeRight(movementSpeed);
+            if (Keyboard.isKeyDown(Keyboard.KEY_S)) {
+                walkBackwards(moveAmount);
             }
-            if (Keyboard.isKeyDown(Keyboard.KEY_SPACE))//move up 
-            {
-                moveUp(movementSpeed);
+            if (Keyboard.isKeyDown(Keyboard.KEY_A)) {
+                strafeLeft(moveAmount);
             }
-            if (Keyboard.isKeyDown(Keyboard.KEY_LSHIFT)) {
-                moveDown(movementSpeed);
+            if (Keyboard.isKeyDown(Keyboard.KEY_D)) {
+                strafeRight(moveAmount);
             }
-            if (Keyboard.isKeyDown(Keyboard.KEY_E)) {
-                moveDown(movementSpeed);
+            
+            // Fly mode vertical movement
+            if (isFlying) {
+                if (Keyboard.isKeyDown(Keyboard.KEY_SPACE)) {
+                    flyUp(moveAmount);
+                }
+                if (Keyboard.isKeyDown(Keyboard.KEY_LSHIFT)) {
+                    flyDown(moveAmount);
+                }
+            } else {
+                // Normal mode controls
+                if (Keyboard.isKeyDown(Keyboard.KEY_SPACE)) {
+                    jump();
+                }
+                if (!isFlying && isInWater) {
+                    if (Keyboard.isKeyDown(Keyboard.KEY_R)) {
+                        moveUp(moveAmount * 2);
+                    }
+                    if (Keyboard.isKeyDown(Keyboard.KEY_F)) {
+                        moveDown(moveAmount);
+                    }
+                }
             }
-            if (Keyboard.isKeyDown(Keyboard.KEY_CAPITAL)) {
-                movementSpeed = 0.7f;
+            
+            // Sprint (only when not flying)
+            if (!isFlying && Keyboard.isKeyDown(Keyboard.KEY_LSHIFT) && !isInWater) {
+                movementSpeed = 8.0f;
+            } else if (!isFlying && !Keyboard.isKeyDown(Keyboard.KEY_LSHIFT)) {
+                movementSpeed = 5.0f;
             }
-            else
-                movementSpeed = 0.35f;
+            
+            // Toggle fly mode - check key press
+            boolean fKeyDown = Keyboard.isKeyDown(Keyboard.KEY_F);
+            if (fKeyDown && !rightMouseWasDown) {
+                toggleFlyMode();
+            }
+            
+            // Block breaking
             boolean leftMouseDown = Mouse.isButtonDown(0);
             if (leftMouseDown && !leftMouseWasDown) {
                 breakBlockInFront();
             }
             leftMouseWasDown = leftMouseDown;
             
+            // Block placing (right click)
+            boolean rightMouseDown = Mouse.isButtonDown(1);
+            if (rightMouseDown && !rightMouseWasDown) {
+                placeBlockInFront();
+            }
+            
+            // Store for next frame (for fly toggle detection)
+            boolean oldFKeyState = fKeyDown;
+            
+            // Apply gravity (if not flying)
+            applyGravity(dt);
+            
+            // Update mouse look
             yaw(dx * mouseSensitivity);
             pitch(dy * mouseSensitivity);
             
-            //set the modelview matrix back to the identity
             glLoadIdentity();
-            //look through the camera before you draw anything
             lookThrough();
             glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-            //you would draw your scene here.
-            currentChunk.render(); //CHANGED TO CHUNK RENDER
-            //draw the buffer to the screen
+            currentChunk.render();
             Display.update();
             Display.sync(60);
         }
         Display.destroy();
     }
 }
-
