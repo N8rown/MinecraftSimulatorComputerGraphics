@@ -279,35 +279,35 @@ public class Chunk {
         int offset = CUBE_LENGTH / 2;
         return new float[]{
             // TOP Of Block QUAD
-            x + offset, y + offset, z,
-            x - offset, y + offset, z,
-            x - offset, y + offset, z - CUBE_LENGTH,
-            x + offset, y + offset, z - CUBE_LENGTH,
+            x + offset, y + offset, z + offset,
+            x - offset, y + offset, z + offset,
+            x - offset, y + offset, z - offset,
+            x + offset, y + offset, z - offset,
             // BOTTOM QUAD
-            x + offset, y - offset, z - CUBE_LENGTH,
-            x - offset, y - offset, z - CUBE_LENGTH,
-            x - offset, y - offset, z,
-            x + offset, y - offset, z,
+            x + offset, y - offset, z - offset,
+            x - offset, y - offset, z - offset,
+            x - offset, y - offset, z + offset,
+            x + offset, y - offset, z + offset,
             // FRONT QUAD
-            x + offset, y + offset, z - CUBE_LENGTH,
-            x - offset, y + offset, z - CUBE_LENGTH,
-            x - offset, y - offset, z - CUBE_LENGTH,
-            x + offset, y - offset, z - CUBE_LENGTH,
+            x + offset, y + offset, z - offset,
+            x - offset, y + offset, z - offset,
+            x - offset, y - offset, z - offset,
+            x + offset, y - offset, z - offset,
             // BACK QUAD
-            x + offset, y - offset, z,
-            x - offset, y - offset, z,
-            x - offset, y + offset, z,
-            x + offset, y + offset, z,
+            x + offset, y - offset, z + offset,
+            x - offset, y - offset, z + offset,
+            x - offset, y + offset, z + offset,
+            x + offset, y + offset, z + offset,
             // LEFT QUAD
-            x - offset, y + offset, z - CUBE_LENGTH,
-            x - offset, y + offset, z,
-            x - offset, y - offset, z,
-            x - offset, y - offset, z - CUBE_LENGTH,
+            x - offset, y + offset, z - offset,
+            x - offset, y + offset, z + offset,
+            x - offset, y - offset, z + offset,
+            x - offset, y - offset, z - offset,
             // RIGHT QUAD
-            x + offset, y + offset, z,
-            x + offset, y + offset, z - CUBE_LENGTH,
-            x + offset, y - offset, z - CUBE_LENGTH,
-            x + offset, y - offset, z
+            x + offset, y + offset, z + offset,
+            x + offset, y + offset, z - offset,
+            x + offset, y - offset, z - offset,
+            x + offset, y - offset, z + offset
         };
     }
 

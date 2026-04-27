@@ -37,8 +37,8 @@ public class FPcameraController {
     private boolean isOnGround = false;
     private boolean isInWater = false;
     private boolean isFlying = false; // Fly mode toggle
-    private static final float GRAVITY = 9.8f;
-    private static final float JUMP_POWER = 7.5f;
+    private static final float GRAVITY = 9.8f * 2;
+    private static final float JUMP_POWER = 7.0f * 1.5f;
     private static final float WATER_BUOYANCY = 4.0f;
     private static final float WATER_DRAG = 0.95f;
     private static final float FLY_SPEED = 8.0f;
