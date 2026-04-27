@@ -23,7 +23,8 @@ public class NinecraftByNojang { //MAIN CLASS
     private FloatBuffer whiteLight;
     
     public void start() {
-        fp = new FPcameraController(0f,-40f,0f); //Moved to start
+        fp = new FPcameraController(-30f,-45f,-30f); //Moved to center of chunk
+        //Chunk is 0 to -60, 0 to -45, 0 to -60
         try {
             createWindow();
             initGL();
@@ -51,7 +52,7 @@ public class NinecraftByNojang { //MAIN CLASS
     }
     
     private void initGL() {
-        glClearColor(0.0f, 0.0f, 0.0f, 0.0f);
+        glClearColor(0.5f, 0.75f, 1.0f, 1.0f); // Light blue color
         glMatrixMode(GL_PROJECTION);
         glLoadIdentity();
         GLU.gluPerspective(100.0f, (float)displayMode.getWidth()/(float)
@@ -63,6 +64,14 @@ public class NinecraftByNojang { //MAIN CLASS
         glEnable(GL_DEPTH_TEST);
         glEnable(GL_TEXTURE_2D);
         glEnableClientState (GL_TEXTURE_COORD_ARRAY);
+        //enable transparency for water
+        glEnable(GL_BLEND);
+        glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+        //backface culling
+        glEnable(GL_CULL_FACE);
+        glCullFace(GL_BACK);
+        glFrontFace(GL_CW);//Clockwise
+        
         //Added Lighting code
         initLightArrays();
         glLight(GL_LIGHT0, GL_POSITION, lightPosition); //sets our light’s position
@@ -75,7 +84,7 @@ public class NinecraftByNojang { //MAIN CLASS
     }
     private void initLightArrays() {
         lightPosition = BufferUtils.createFloatBuffer(4);
-        lightPosition.put(0.0f).put(-40.0f).put(0.0f).put(1.0f).flip();
+        lightPosition.put(0.0f).put(0.0f).put(0.0f).put(1.0f).flip();
         whiteLight = BufferUtils.createFloatBuffer(4);
         whiteLight.put(1.0f).put(1.0f).put(1.0f).put(0.0f).flip();
     }
