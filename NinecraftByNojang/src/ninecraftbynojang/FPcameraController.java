@@ -30,6 +30,7 @@ public class FPcameraController {
     private Chunk currentChunk;// NEEDS TO BE INITIALIZED
     private boolean leftMouseWasDown = false;
     private boolean rightMouseWasDown = false;
+    private boolean FKeyWasDown = false;
     
     // Physics variables
     private float velocityY = 0.0f;
@@ -37,11 +38,11 @@ public class FPcameraController {
     private boolean isInWater = false;
     private boolean isFlying = false; // Fly mode toggle
     private static final float GRAVITY = 9.8f;
-    private static final float JUMP_POWER = 5.5f;
+    private static final float JUMP_POWER = 7.5f;
     private static final float WATER_BUOYANCY = 4.0f;
     private static final float WATER_DRAG = 0.95f;
     private static final float FLY_SPEED = 8.0f;
-    private static final float PLAYER_HEIGHT = 1.6f;
+    private static final float PLAYER_HEIGHT = 2.5f;
     private static final float PLAYER_WIDTH = 0.6f;
     
     public FPcameraController(float x, float y, float z)
@@ -495,9 +496,10 @@ public class FPcameraController {
             
             // Toggle fly mode - check key press
             boolean fKeyDown = Keyboard.isKeyDown(Keyboard.KEY_F);
-            if (fKeyDown && !rightMouseWasDown) {
+            if (fKeyDown && !FKeyWasDown) {
                 toggleFlyMode();
             }
+            FKeyWasDown = fKeyDown;
             
             // Block breaking
             boolean leftMouseDown = Mouse.isButtonDown(0);
@@ -511,9 +513,7 @@ public class FPcameraController {
             if (rightMouseDown && !rightMouseWasDown) {
                 placeBlockInFront();
             }
-            
-            // Store for next frame (for fly toggle detection)
-            boolean oldFKeyState = fKeyDown;
+            rightMouseWasDown = rightMouseDown;
             
             // Apply gravity (if not flying)
             applyGravity(dt);
