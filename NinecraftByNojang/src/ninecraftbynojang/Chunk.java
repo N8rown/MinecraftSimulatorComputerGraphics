@@ -159,7 +159,9 @@ public class Chunk {
         for (int x = 0; x < CHUNK_SIZE; x++) {
             for (int y = 0; y < CHUNK_SIZE; y++) {
                 for (int z = 0; z < CHUNK_SIZE; z++) {
+                    boolean[] visibleSurfaces = {true, true, true, true, true, true};
                     Block block = Blocks[x][y][z];
+                    int vertices = 0;
 
                     if (block == null || !block.isActive()) {
                         continue;
@@ -168,17 +170,76 @@ public class Chunk {
                     float worldX = startX + x * CUBE_LENGTH;
                     float worldY = startY + y * CUBE_LENGTH;
                     float worldZ = startZ + z * CUBE_LENGTH;
-
-                    if (block.getType() == Block.BlockType.BlockType_Water) {
-                        waterVertexPositionData.put(createCube(worldX, worldY, worldZ));
-                        waterVertexColorData.put(createCubeVertexCol(getCubeColor(block)));
-                        waterVertexTextureData.put(createTexCube(0, 0, block));
-                        waterVertexCount += 24;
-                    } else {
-                        solidVertexPositionData.put(createCube(worldX, worldY, worldZ));
-                        solidVertexColorData.put(createCubeVertexCol(getCubeColor(block)));
-                        solidVertexTextureData.put(createTexCube(0, 0, block));
-                        solidVertexCount += 24;
+                    
+                    if(block.getType() == Block.BlockType.BlockType_Water)
+                    {
+                        //TOP
+                        if(getBlock(x, y+1, z) != null)
+                            visibleSurfaces[0] = false;
+                        //BOTTOM
+                        if(getBlock(x, y-1, z) != null)
+                            visibleSurfaces[1] = false;
+                        //FRONT
+                        if(getBlock(x, y, z-1) != null)
+                            visibleSurfaces[2] = false;
+                        //BACK
+                        if(getBlock(x, y, z+1) != null)
+                            visibleSurfaces[3] = false;
+                        //LEFT
+                        if(getBlock(x-1, y, z) != null)
+                            visibleSurfaces[4] = false;
+                        //RIGHT
+                        if(getBlock(x+1, y, z) != null)
+                            visibleSurfaces[5] = false;
+                    }
+                    else
+                    {
+                        //TOP
+                        if(getBlock(x, y+1, z) != null && 
+                            getBlock(x, y+1, z).getType() != Block.BlockType.BlockType_Water)
+                                visibleSurfaces[0] = false;
+                        //BOTTOM
+                        if(getBlock(x, y-1, z) != null &&
+                            getBlock(x, y-1, z).getType() != Block.BlockType.BlockType_Water)
+                                visibleSurfaces[1] = false;
+                        //FRONT
+                        if(getBlock(x, y, z-1) != null &&
+                            getBlock(x, y, z-1).getType() != Block.BlockType.BlockType_Water)
+                                visibleSurfaces[2] = false;                    
+                        //BACK
+                        if(getBlock(x, y, z+1) != null &&
+                            getBlock(x, y, z+1).getType() != Block.BlockType.BlockType_Water)
+                                visibleSurfaces[3] = false;                    
+                        //LEFT
+                        if(getBlock(x-1, y, z) != null &&
+                            getBlock(x-1, y, z).getType() != Block.BlockType.BlockType_Water)
+                                visibleSurfaces[4] = false;                    
+                        //RIGHT
+                        if(getBlock(x+1, y, z) != null &&
+                            getBlock(x+1, y, z).getType() != Block.BlockType.BlockType_Water)
+                                visibleSurfaces[5] = false; 
+                    } 
+                    
+                    for(boolean surfaces: visibleSurfaces)
+                    {
+                        if(surfaces)
+                            vertices += 4;
+                    }
+                    
+                    if(vertices !=0)
+                    {
+                        if (block.getType() == Block.BlockType.BlockType_Water) {
+                        waterVertexPositionData.put(createCube(worldX, worldY, worldZ, visibleSurfaces));
+                        waterVertexColorData.put(createCubeVertexCol(getCubeColor(block), vertices));
+                        waterVertexTextureData.put(createTexCube(0, 0, block, visibleSurfaces));
+                        waterVertexCount += vertices;
+                        } 
+                        else {
+                        solidVertexPositionData.put(createCube(worldX, worldY, worldZ, visibleSurfaces));
+                        solidVertexColorData.put(createCubeVertexCol(getCubeColor(block), vertices));
+                        solidVertexTextureData.put(createTexCube(0, 0, block, visibleSurfaces));
+                        solidVertexCount += vertices;
+                        }
                     }
                 }
             }
@@ -238,9 +299,9 @@ public class Chunk {
         // Render water second
         if (waterVertexCount > 0) { 
             glEnable(GL_BLEND);
-            //glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA); //Move to init
+            glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA); //Move to init
             glDepthMask(false);
-            //glDisable(GL_CULL_FACE);
+            glDisable(GL_CULL_FACE);
 
             glBindBuffer(GL_ARRAY_BUFFER, waterVBOVertexHandle);
             glVertexPointer(3, GL_FLOAT, 0, 0L);
@@ -264,9 +325,10 @@ public class Chunk {
 
     // ====================== Helper Methods ======================
 
-    private float[] createCubeVertexCol(float[] cubeColorArray) {
-        float[] cubeColors = new float[24 * 4]; // 24 vertices, RGBA
-        for (int i = 0; i < 24; i++) {
+    private float[] createCubeVertexCol(float[] cubeColorArray, int vertices) {
+        float[] cubeColors = new float[vertices * 4]; // 24 vertices, RGBA
+        
+        for (int i = 0; i < vertices; i++) {
             cubeColors[i * 4] = cubeColorArray[0];
             cubeColors[i * 4 + 1] = cubeColorArray[1];
             cubeColors[i * 4 + 2] = cubeColorArray[2];
@@ -275,170 +337,597 @@ public class Chunk {
         return cubeColors;
     }
 
-    public static float[] createCube(float x, float y, float z) {
+    public static float[] createCube(float x, float y, float z, boolean visibleSurfaces[]) {
         int offset = CUBE_LENGTH / 2;
-        return new float[]{
-            // TOP Of Block QUAD
-            x + offset, y + offset, z + offset,
+        
+        int quad = 0;
+        
+        for (boolean visibleSurface : visibleSurfaces) 
+        {
+          if(visibleSurface)
+              quad += 12;
+        }
+        
+        float cube[] = new float[quad];
+       
+        int index = 0;
+        // TOP Of Block QUAD
+        if(visibleSurfaces[0])
+        {
+            float top[] = {x + offset, y + offset, z + offset,
             x - offset, y + offset, z + offset,
             x - offset, y + offset, z - offset,
-            x + offset, y + offset, z - offset,
-            // BOTTOM QUAD
-            x + offset, y - offset, z - offset,
+            x + offset, y + offset, z - offset};
+            System.arraycopy(top, 0, cube, index, 12);
+            index +=12;
+        }
+            
+        // BOTTOM QUAD
+        if(visibleSurfaces[1])
+        {
+            float bottom[] = {x + offset, y - offset, z - offset,
             x - offset, y - offset, z - offset,
             x - offset, y - offset, z + offset,
-            x + offset, y - offset, z + offset,
-            // FRONT QUAD
-            x + offset, y + offset, z - offset,
+            x + offset, y - offset, z + offset,};
+            System.arraycopy(bottom, 0, cube, index, 12);
+            index += 12;
+        }
+        
+        // FRONT QUAD
+        if(visibleSurfaces[2])
+        {
+            float front[] = {x + offset, y + offset, z - offset,
             x - offset, y + offset, z - offset,
             x - offset, y - offset, z - offset,
-            x + offset, y - offset, z - offset,
-            // BACK QUAD
-            x + offset, y - offset, z + offset,
+            x + offset, y - offset, z - offset};
+            System.arraycopy(front, 0, cube, index, 12);
+            index += 12;
+        }
+        
+        // BACK QUAD
+        if(visibleSurfaces[3])
+        {
+            float back[] = {x + offset, y - offset, z + offset,
             x - offset, y - offset, z + offset,
             x - offset, y + offset, z + offset,
-            x + offset, y + offset, z + offset,
-            // LEFT QUAD
-            x - offset, y + offset, z - offset,
+            x + offset, y + offset, z + offset};
+            System.arraycopy(back, 0, cube, index, 12);
+            index += 12;
+        }
+        // LEFT QUAD
+        if(visibleSurfaces[4])
+        {
+            float left[] = {x - offset, y + offset, z - offset,
             x - offset, y + offset, z + offset,
             x - offset, y - offset, z + offset,
-            x - offset, y - offset, z - offset,
-            // RIGHT QUAD
-            x + offset, y + offset, z + offset,
+            x - offset, y - offset, z - offset};
+            System.arraycopy(left, 0, cube, index, 12);
+            index += 12;
+        }
+        
+        // RIGHT QUAD
+        if(visibleSurfaces[5])
+        {
+            float right[] = {x + offset, y + offset, z + offset,
             x + offset, y + offset, z - offset,
             x + offset, y - offset, z - offset,
-            x + offset, y - offset, z + offset
-        };
+            x + offset, y - offset, z + offset};
+            System.arraycopy(right, 0, cube, index, 12);
+        }
+        
+        return cube;
+        
+//        return new float[]{
+//            // TOP Of Block QUAD
+//            x + offset, y + offset, z + offset,
+//            x - offset, y + offset, z + offset,
+//            x - offset, y + offset, z - offset,
+//            x + offset, y + offset, z - offset,
+//            // BOTTOM QUAD
+//            x + offset, y - offset, z - offset,
+//            x - offset, y - offset, z - offset,
+//            x - offset, y - offset, z + offset,
+//            x + offset, y - offset, z + offset,
+//            // FRONT QUAD
+//            x + offset, y + offset, z - offset,
+//            x - offset, y + offset, z - offset,
+//            x - offset, y - offset, z - offset,
+//            x + offset, y - offset, z - offset,
+//            // BACK QUAD
+//            x + offset, y - offset, z + offset,
+//            x - offset, y - offset, z + offset,
+//            x - offset, y + offset, z + offset,
+//            x + offset, y + offset, z + offset,
+//            // LEFT QUAD
+//            x - offset, y + offset, z - offset,
+//            x - offset, y + offset, z + offset,
+//            x - offset, y - offset, z + offset,
+//            x - offset, y - offset, z - offset,
+//            // RIGHT QUAD
+//            x + offset, y + offset, z + offset,
+//            x + offset, y + offset, z - offset,
+//            x + offset, y - offset, z - offset,
+//            x + offset, y - offset, z + offset
+//        };
     }
 
     private float[] getCubeColor(Block block) {
         if (block.getType() == Block.BlockType.BlockType_Water) {
-            return new float[]{1.0f, 1.0f, 1.0f, 0.1f}; //0.45 is the transparency
+            return new float[]{1.0f, 1.0f, 1.0f, 0.45f}; //0.45 is the transparency
         }
         return new float[]{1.0f, 1.0f, 1.0f, 1.0f};
     }
 
-    public static float[] createTexCube(float x, float y, Block block) {
+    public static float[] createTexCube(float x, float y, Block block, boolean visibleSurfaces[]) {
         float offset = (1024f / 16) / 1024f;
-
+        
+        int side = 0;
+        
+        for (boolean visibleSurface : visibleSurfaces) 
+        {
+          if(visibleSurface)
+              side += 8;
+        }
+        
+        float texCube[] = new float[side];
+        
+        int index = 0;
+        
         switch (block.GetID()) {
             case 0: // Grass
-                return new float[]{
-                    // BOTTOM
-                    x + offset*3, y + offset*10, x + offset*2, y + offset*10,
-                    x + offset*2, y + offset*9, x + offset*3, y + offset*9,
-                    // TOP
-                    x + offset*3, y + offset*1, x + offset*2, y + offset*1,
-                    x + offset*2, y + offset*0, x + offset*3, y + offset*0,
-                    // FRONT
-                    x + offset*3, y + offset*0, x + offset*4, y + offset*0,
-                    x + offset*4, y + offset*1, x + offset*3, y + offset*1,
-                    // BACK
-                    x + offset*4, y + offset*1, x + offset*3, y + offset*1,
-                    x + offset*3, y + offset*0, x + offset*4, y + offset*0,
-                    // LEFT
-                    x + offset*3, y + offset*0, x + offset*4, y + offset*0,
-                    x + offset*4, y + offset*1, x + offset*3, y + offset*1,
-                    // RIGHT
-                    x + offset*3, y + offset*0, x + offset*4, y + offset*0,
-                    x + offset*4, y + offset*1, x + offset*3, y + offset*1
-                };
+                //TOP
+                if(visibleSurfaces[0])
+                {
+                    float bottom[] = {x + offset*3, y + offset*10, x + offset*2, y + offset*10,
+                    x + offset*2, y + offset*9, x + offset*3, y + offset*9};
+                    System.arraycopy(bottom, 0, texCube, index, 8);
+                    index +=8;
+                }
+                //BOTTOM
+                if(visibleSurfaces[1])
+                {
+                    float top[] = {x + offset*3, y + offset*1, x + offset*2, y + offset*1,
+                    x + offset*2, y + offset*0, x + offset*3, y + offset*0};
+                    System.arraycopy(top, 0, texCube, index, 8);
+                    index +=8;
+                }
+                //FRONT
+                if(visibleSurfaces[2])
+                {
+                    float front[] = {x + offset*3, y + offset*0, x + offset*4, y + offset*0,
+                    x + offset*4, y + offset*1, x + offset*3, y + offset*1};
+                    System.arraycopy(front, 0, texCube, index, 8);
+                    index +=8;
+                }
+                //BACK
+                if(visibleSurfaces[3])
+                {
+                    float bottom[] = {x + offset*4, y + offset*1, x + offset*3, y + offset*1,
+                    x + offset*3, y + offset*0, x + offset*4, y + offset*0,};
+                    System.arraycopy(bottom, 0, texCube, index, 8);
+                    index +=8;
+                }
+                //LEFT
+                if(visibleSurfaces[4])
+                {
+                    float bottom[] = {x + offset*3, y + offset*0, x + offset*4, y + offset*0,
+                    x + offset*4, y + offset*1, x + offset*3, y + offset*1};
+                    System.arraycopy(bottom, 0, texCube, index, 8);
+                    index +=8;
+                }
+                //RIGHT
+                if(visibleSurfaces[5])
+                {
+                    float bottom[] = {x + offset*3, y + offset*0, x + offset*4, y + offset*0,
+                    x + offset*4, y + offset*1, x + offset*3, y + offset*1};
+                    System.arraycopy(bottom, 0, texCube, index, 8);
+                }
+                return texCube;
+                
+//                return new float[]{
+//                    // BOTTOM
+//                    x + offset*3, y + offset*10, x + offset*2, y + offset*10,
+//                    x + offset*2, y + offset*9, x + offset*3, y + offset*9,
+//                    // TOP
+//                    x + offset*3, y + offset*1, x + offset*2, y + offset*1,
+//                    x + offset*2, y + offset*0, x + offset*3, y + offset*0,
+//                    // FRONT
+//                    x + offset*3, y + offset*0, x + offset*4, y + offset*0,
+//                    x + offset*4, y + offset*1, x + offset*3, y + offset*1,
+//                    // BACK
+//                    x + offset*4, y + offset*1, x + offset*3, y + offset*1,
+//                    x + offset*3, y + offset*0, x + offset*4, y + offset*0,
+//                    // LEFT
+//                    x + offset*3, y + offset*0, x + offset*4, y + offset*0,
+//                    x + offset*4, y + offset*1, x + offset*3, y + offset*1,
+//                    // RIGHT
+//                    x + offset*3, y + offset*0, x + offset*4, y + offset*0,
+//                    x + offset*4, y + offset*1, x + offset*3, y + offset*1
+//                };
 
             case 1: // Dirt
-                return new float[]{
-                    x + offset*3, y + offset*1, x + offset*2, y + offset*1,
-                    x + offset*2, y + offset*0, x + offset*3, y + offset*0,
-                    x + offset*3, y + offset*1, x + offset*2, y + offset*1,
-                    x + offset*2, y + offset*0, x + offset*3, y + offset*0,
-                    x + offset*2, y + offset*0, x + offset*3, y + offset*0,
-                    x + offset*3, y + offset*1, x + offset*2, y + offset*1,
-                    x + offset*3, y + offset*1, x + offset*2, y + offset*1,
-                    x + offset*2, y + offset*0, x + offset*3, y + offset*0,
-                    x + offset*2, y + offset*0, x + offset*3, y + offset*0,
-                    x + offset*3, y + offset*1, x + offset*2, y + offset*1,
-                    x + offset*2, y + offset*0, x + offset*3, y + offset*0,
-                    x + offset*3, y + offset*1, x + offset*2, y + offset*1
-                };
+                //TOP
+                if(visibleSurfaces[0])
+                {
+                    float bottom[] = {x + offset*3, y + offset*1, x + offset*2, y + offset*1,
+                    x + offset*2, y + offset*0, x + offset*3, y + offset*0};
+                    System.arraycopy(bottom, 0, texCube, index, 8);
+                    index +=8;
+                }
+                //BOTTOM
+                if(visibleSurfaces[1])
+                {
+                    float top[] = {x + offset*3, y + offset*1, x + offset*2, y + offset*1,
+                    x + offset*2, y + offset*0, x + offset*3, y + offset*0};
+                    System.arraycopy(top, 0, texCube, index, 8);
+                    index +=8;
+                }
+                //FRONT
+                if(visibleSurfaces[2])
+                {
+                    float front[] = {x + offset*2, y + offset*0, x + offset*3, y + offset*0,
+                    x + offset*3, y + offset*1, x + offset*2, y + offset*1};
+                    System.arraycopy(front, 0, texCube, index, 8);
+                    index +=8;
+                }
+                //BACK
+                if(visibleSurfaces[3])
+                {
+                    float bottom[] = {x + offset*3, y + offset*1, x + offset*2, y + offset*1,
+                    x + offset*2, y + offset*0, x + offset*3, y + offset*0};
+                    System.arraycopy(bottom, 0, texCube, index, 8);
+                    index +=8;
+                }
+                //LEFT
+                if(visibleSurfaces[4])
+                {
+                    float bottom[] = {x + offset*2, y + offset*0, x + offset*3, y + offset*0,
+                    x + offset*3, y + offset*1, x + offset*2, y + offset*1,};
+                    System.arraycopy(bottom, 0, texCube, index, 8);
+                    index +=8;
+                }
+                //RIGHT
+                if(visibleSurfaces[5])
+                {
+                    float bottom[] = {x + offset*2, y + offset*0, x + offset*3, y + offset*0,
+                    x + offset*3, y + offset*1, x + offset*2, y + offset*1};
+                    System.arraycopy(bottom, 0, texCube, index, 8);
+                }
+                return texCube;
+//                return new float[]{
+//                    x + offset*3, y + offset*1, x + offset*2, y + offset*1,
+//                    x + offset*2, y + offset*0, x + offset*3, y + offset*0,
+//                    x + offset*3, y + offset*1, x + offset*2, y + offset*1,
+//                    x + offset*2, y + offset*0, x + offset*3, y + offset*0,
+//                    x + offset*2, y + offset*0, x + offset*3, y + offset*0,
+//                    x + offset*3, y + offset*1, x + offset*2, y + offset*1,
+//                    x + offset*3, y + offset*1, x + offset*2, y + offset*1,
+//                    x + offset*2, y + offset*0, x + offset*3, y + offset*0,
+//                    x + offset*2, y + offset*0, x + offset*3, y + offset*0,
+//                    x + offset*3, y + offset*1, x + offset*2, y + offset*1,
+//                    x + offset*2, y + offset*0, x + offset*3, y + offset*0,
+//                    x + offset*3, y + offset*1, x + offset*2, y + offset*1
+//                };
 
             case 2: // Water
-                return new float[]{
-                    x + offset*15, y + offset*12, x + offset*14, y + offset*12,
-                    x + offset*14, y + offset*13, x + offset*15, y + offset*13,
-                    x + offset*15, y + offset*13, x + offset*14, y + offset*13,
-                    x + offset*14, y + offset*12, x + offset*15, y + offset*12,
-                    x + offset*14, y + offset*12, x + offset*15, y + offset*12,
-                    x + offset*15, y + offset*13, x + offset*14, y + offset*13,
-                    x + offset*15, y + offset*13, x + offset*14, y + offset*13,
-                    x + offset*14, y + offset*12, x + offset*15, y + offset*12,
-                    x + offset*14, y + offset*12, x + offset*15, y + offset*12,
-                    x + offset*15, y + offset*13, x + offset*14, y + offset*13,
-                    x + offset*14, y + offset*12, x + offset*15, y + offset*12,
-                    x + offset*15, y + offset*13, x + offset*14, y + offset*13
-                };
+                //TOP
+                if(visibleSurfaces[0])
+                {
+                    float bottom[] = {x + offset*15, y + offset*12, x + offset*14, y + offset*12,
+                    x + offset*14, y + offset*13, x + offset*15, y + offset*13};
+                    System.arraycopy(bottom, 0, texCube, index, 8);
+                    index +=8;
+                }
+                //BOTTOM
+                if(visibleSurfaces[1])
+                {
+                    float top[] = {x + offset*15, y + offset*13, x + offset*14, y + offset*13,
+                    x + offset*14, y + offset*12, x + offset*15, y + offset*12};
+                    System.arraycopy(top, 0, texCube, index, 8);
+                    index +=8;
+                }
+                //FRONT
+                if(visibleSurfaces[2])
+                {
+                    float front[] = {x + offset*14, y + offset*12, x + offset*15, y + offset*12,
+                    x + offset*15, y + offset*13, x + offset*14, y + offset*13};
+                    System.arraycopy(front, 0, texCube, index, 8);
+                    index +=8;
+                }
+                //BACK
+                if(visibleSurfaces[3])
+                {
+                    float back[] = {x + offset*15, y + offset*13, x + offset*14, y + offset*13,
+                    x + offset*14, y + offset*12, x + offset*15, y + offset*12};
+                    System.arraycopy(back, 0, texCube, index, 8);
+                    index +=8;
+                }
+                //LEFT
+                if(visibleSurfaces[4])
+                {
+                    float left[] = {x + offset*14, y + offset*12, x + offset*15, y + offset*12,
+                    x + offset*15, y + offset*13, x + offset*14, y + offset*13};
+                    System.arraycopy(left, 0, texCube, index, 8);
+                    index +=8;
+                }
+                //RIGHT
+                if(visibleSurfaces[5])
+                {
+                    float right[] = {x + offset*14, y + offset*12, x + offset*15, y + offset*12,
+                    x + offset*15, y + offset*13, x + offset*14, y + offset*13};
+                    System.arraycopy(right, 0, texCube, index, 8);
+                }
+                return texCube;
+//                return new float[]{
+//                    x + offset*15, y + offset*12, x + offset*14, y + offset*12,
+//                    x + offset*14, y + offset*13, x + offset*15, y + offset*13,
+//                    x + offset*15, y + offset*13, x + offset*14, y + offset*13,
+//                    x + offset*14, y + offset*12, x + offset*15, y + offset*12,
+//                    x + offset*14, y + offset*12, x + offset*15, y + offset*12,
+//                    x + offset*15, y + offset*13, x + offset*14, y + offset*13,
+//                    x + offset*15, y + offset*13, x + offset*14, y + offset*13,
+//                    x + offset*14, y + offset*12, x + offset*15, y + offset*12,
+//                    x + offset*14, y + offset*12, x + offset*15, y + offset*12,
+//                    x + offset*15, y + offset*13, x + offset*14, y + offset*13,
+//                    x + offset*14, y + offset*12, x + offset*15, y + offset*12,
+//                    x + offset*15, y + offset*13, x + offset*14, y + offset*13
+//                };
 
             case 3: // Sand
-                return new float[]{
-                    x + offset*3, y + offset*2, x + offset*2, y + offset*2,
-                    x + offset*2, y + offset*1, x + offset*3, y + offset*1,
-                    x + offset*3, y + offset*2, x + offset*2, y + offset*2,
-                    x + offset*2, y + offset*1, x + offset*3, y + offset*1,
-                    x + offset*2, y + offset*1, x + offset*3, y + offset*1,
-                    x + offset*3, y + offset*2, x + offset*2, y + offset*2,
-                    x + offset*3, y + offset*2, x + offset*2, y + offset*2,
-                    x + offset*2, y + offset*1, x + offset*3, y + offset*1,
-                    x + offset*2, y + offset*1, x + offset*3, y + offset*1,
-                    x + offset*3, y + offset*2, x + offset*2, y + offset*2,
-                    x + offset*2, y + offset*1, x + offset*3, y + offset*1,
-                    x + offset*3, y + offset*2, x + offset*2, y + offset*2
-                };
+                //TOP
+                if(visibleSurfaces[0])
+                {
+                    float bottom[] = {x + offset*3, y + offset*2, x + offset*2, y + offset*2,
+                    x + offset*2, y + offset*1, x + offset*3, y + offset*1};
+                    System.arraycopy(bottom, 0, texCube, index, 8);
+                    index +=8;
+                }
+                //BOTTOM
+                if(visibleSurfaces[1])
+                {
+                    float top[] = {x + offset*3, y + offset*2, x + offset*2, y + offset*2,
+                    x + offset*2, y + offset*1, x + offset*3, y + offset*1};
+                    System.arraycopy(top, 0, texCube, index, 8);
+                    index +=8;
+                }
+                //FRONT
+                if(visibleSurfaces[2])
+                {
+                    float front[] = {x + offset*2, y + offset*1, x + offset*3, y + offset*1,
+                    x + offset*3, y + offset*2, x + offset*2, y + offset*2};
+                    System.arraycopy(front, 0, texCube, index, 8);
+                    index +=8;
+                }
+                //BACK
+                if(visibleSurfaces[3])
+                {
+                    float back[] = {x + offset*3, y + offset*2, x + offset*2, y + offset*2,
+                    x + offset*2, y + offset*1, x + offset*3, y + offset*1};
+                    System.arraycopy(back, 0, texCube, index, 8);
+                    index +=8;
+                }
+                //LEFT
+                if(visibleSurfaces[4])
+                {
+                    float left[] = {x + offset*2, y + offset*1, x + offset*3, y + offset*1,
+                    x + offset*3, y + offset*2, x + offset*2, y + offset*2};
+                    System.arraycopy(left, 0, texCube, index, 8);
+                    index +=8;
+                }
+                //RIGHT
+                if(visibleSurfaces[5])
+                {
+                    float right[] = {x + offset*2, y + offset*1, x + offset*3, y + offset*1,
+                    x + offset*3, y + offset*2, x + offset*2, y + offset*2};
+                    System.arraycopy(right, 0, texCube, index, 8);
+                }
+                return texCube;
+//                return new float[]{
+//                    x + offset*3, y + offset*2, x + offset*2, y + offset*2,
+//                    x + offset*2, y + offset*1, x + offset*3, y + offset*1,
+//                    x + offset*3, y + offset*2, x + offset*2, y + offset*2,
+//                    x + offset*2, y + offset*1, x + offset*3, y + offset*1,
+//                    x + offset*2, y + offset*1, x + offset*3, y + offset*1,
+//                    x + offset*3, y + offset*2, x + offset*2, y + offset*2,
+//                    x + offset*3, y + offset*2, x + offset*2, y + offset*2,
+//                    x + offset*2, y + offset*1, x + offset*3, y + offset*1,
+//                    x + offset*2, y + offset*1, x + offset*3, y + offset*1,
+//                    x + offset*3, y + offset*2, x + offset*2, y + offset*2,
+//                    x + offset*2, y + offset*1, x + offset*3, y + offset*1,
+//                    x + offset*3, y + offset*2, x + offset*2, y + offset*2
+//                };
 
             case 4: // Stone
-                return new float[]{
-                    x + offset*2, y + offset*1, x + offset*1, y + offset*1,
-                    x + offset*1, y + offset*0, x + offset*2, y + offset*0,
-                    x + offset*2, y + offset*1, x + offset*1, y + offset*1,
-                    x + offset*1, y + offset*0, x + offset*2, y + offset*0,
-                    x + offset*1, y + offset*0, x + offset*2, y + offset*0,
-                    x + offset*2, y + offset*1, x + offset*1, y + offset*1,
-                    x + offset*2, y + offset*1, x + offset*1, y + offset*1,
-                    x + offset*1, y + offset*0, x + offset*2, y + offset*0,
-                    x + offset*1, y + offset*0, x + offset*2, y + offset*0,
-                    x + offset*2, y + offset*1, x + offset*1, y + offset*1,
-                    x + offset*1, y + offset*0, x + offset*2, y + offset*0,
-                    x + offset*2, y + offset*1, x + offset*1, y + offset*1
-                };
+                //TOP
+                if(visibleSurfaces[0])
+                {
+                    float bottom[] = {x + offset*2, y + offset*1, x + offset*1, y + offset*1,
+                    x + offset*1, y + offset*0, x + offset*2, y + offset*0};
+                    System.arraycopy(bottom, 0, texCube, index, 8);
+                    index +=8;
+                }
+                //BOTTOM
+                if(visibleSurfaces[1])
+                {
+                    float top[] = {x + offset*2, y + offset*1, x + offset*1, y + offset*1,
+                    x + offset*1, y + offset*0, x + offset*2, y + offset*0};
+                    System.arraycopy(top, 0, texCube, index, 8);
+                    index +=8;
+                }
+                //FRONT
+                if(visibleSurfaces[2])
+                {
+                    float front[] = {x + offset*1, y + offset*0, x + offset*2, y + offset*0,
+                    x + offset*2, y + offset*1, x + offset*1, y + offset*1};
+                    System.arraycopy(front, 0, texCube, index, 8);
+                    index +=8;
+                }
+                //BACK
+                if(visibleSurfaces[3])
+                {
+                    float back[] = {x + offset*2, y + offset*1, x + offset*1, y + offset*1,
+                    x + offset*1, y + offset*0, x + offset*2, y + offset*0};
+                    System.arraycopy(back, 0, texCube, index, 8);
+                    index +=8;
+                }
+                //LEFT
+                if(visibleSurfaces[4])
+                {
+                    float left[] = {x + offset*1, y + offset*0, x + offset*2, y + offset*0,
+                    x + offset*2, y + offset*1, x + offset*1, y + offset*1};
+                    System.arraycopy(left, 0, texCube, index, 8);
+                    index +=8;
+                }
+                //RIGHT
+                if(visibleSurfaces[5])
+                {
+                    float right[] = {x + offset*1, y + offset*0, x + offset*2, y + offset*0,
+                    x + offset*2, y + offset*1, x + offset*1, y + offset*1};
+                    System.arraycopy(right, 0, texCube, index, 8);
+                }
+                return texCube;
+//                return new float[]{
+//                    x + offset*2, y + offset*1, x + offset*1, y + offset*1,
+//                    x + offset*1, y + offset*0, x + offset*2, y + offset*0,
+//                    x + offset*2, y + offset*1, x + offset*1, y + offset*1,
+//                    x + offset*1, y + offset*0, x + offset*2, y + offset*0,
+//                    x + offset*1, y + offset*0, x + offset*2, y + offset*0,
+//                    x + offset*2, y + offset*1, x + offset*1, y + offset*1,
+//                    x + offset*2, y + offset*1, x + offset*1, y + offset*1,
+//                    x + offset*1, y + offset*0, x + offset*2, y + offset*0,
+//                    x + offset*1, y + offset*0, x + offset*2, y + offset*0,
+//                    x + offset*2, y + offset*1, x + offset*1, y + offset*1,
+//                    x + offset*1, y + offset*0, x + offset*2, y + offset*0,
+//                    x + offset*2, y + offset*1, x + offset*1, y + offset*1
+//                };
 
             case 5: // Bedrock
-                return new float[]{
-                    x + offset*2, y + offset*2, x + offset*1, y + offset*2,
-                    x + offset*1, y + offset*1, x + offset*2, y + offset*1,
-                    x + offset*2, y + offset*2, x + offset*1, y + offset*2,
-                    x + offset*1, y + offset*1, x + offset*2, y + offset*1,
-                    x + offset*1, y + offset*1, x + offset*2, y + offset*1,
-                    x + offset*2, y + offset*2, x + offset*1, y + offset*2,
-                    x + offset*2, y + offset*2, x + offset*1, y + offset*2,
-                    x + offset*1, y + offset*1, x + offset*2, y + offset*1,
-                    x + offset*1, y + offset*1, x + offset*2, y + offset*1,
-                    x + offset*2, y + offset*2, x + offset*1, y + offset*2,
-                    x + offset*1, y + offset*1, x + offset*2, y + offset*1,
-                    x + offset*2, y + offset*2, x + offset*1, y + offset*2
-                };
+                //TOP
+                if(visibleSurfaces[0])
+                {
+                    float bottom[] = {x + offset*2, y + offset*2, x + offset*1, y + offset*2,
+                    x + offset*1, y + offset*1, x + offset*2, y + offset*1};
+                    System.arraycopy(bottom, 0, texCube, index, 8);
+                    index +=8;
+                }
+                //BOTTOM
+                if(visibleSurfaces[1])
+                {
+                    float top[] = {x + offset*2, y + offset*2, x + offset*1, y + offset*2,
+                    x + offset*1, y + offset*1, x + offset*2, y + offset*1};
+                    System.arraycopy(top, 0, texCube, index, 8);
+                    index +=8;
+                }
+                //FRONT
+                if(visibleSurfaces[2])
+                {
+                    float front[] = {x + offset*1, y + offset*1, x + offset*2, y + offset*1,
+                    x + offset*2, y + offset*2, x + offset*1, y + offset*2};
+                    System.arraycopy(front, 0, texCube, index, 8);
+                    index +=8;
+                }
+                //BACK
+                if(visibleSurfaces[3])
+                {
+                    float back[] = {x + offset*2, y + offset*2, x + offset*1, y + offset*2,
+                    x + offset*1, y + offset*1, x + offset*2, y + offset*1};
+                    System.arraycopy(back, 0, texCube, index, 8);
+                    index +=8;
+                }
+                //LEFT
+                if(visibleSurfaces[4])
+                {
+                    float left[] = {x + offset*1, y + offset*1, x + offset*2, y + offset*1,
+                    x + offset*2, y + offset*2, x + offset*1, y + offset*2};
+                    System.arraycopy(left, 0, texCube, index, 8);
+                    index +=8;
+                }
+                //RIGHT
+                if(visibleSurfaces[5])
+                {
+                    float right[] = {x + offset*1, y + offset*1, x + offset*2, y + offset*1,
+                    x + offset*2, y + offset*2, x + offset*1, y + offset*2};
+                    System.arraycopy(right, 0, texCube, index, 8);
+                }
+                return texCube;
+//                return new float[]{
+//                    x + offset*2, y + offset*2, x + offset*1, y + offset*2,
+//                    x + offset*1, y + offset*1, x + offset*2, y + offset*1,
+//                    x + offset*2, y + offset*2, x + offset*1, y + offset*2,
+//                    x + offset*1, y + offset*1, x + offset*2, y + offset*1,
+//                    x + offset*1, y + offset*1, x + offset*2, y + offset*1,
+//                    x + offset*2, y + offset*2, x + offset*1, y + offset*2,
+//                    x + offset*2, y + offset*2, x + offset*1, y + offset*2,
+//                    x + offset*1, y + offset*1, x + offset*2, y + offset*1,
+//                    x + offset*1, y + offset*1, x + offset*2, y + offset*1,
+//                    x + offset*2, y + offset*2, x + offset*1, y + offset*2,
+//                    x + offset*1, y + offset*1, x + offset*2, y + offset*1,
+//                    x + offset*2, y + offset*2, x + offset*1, y + offset*2
+//                };
 
             default: // Default (TNT-like)
-                return new float[]{
-                    x + offset*10, y + offset*1, x + offset*9, y + offset*1,
-                    x + offset*9, y + offset*0, x + offset*10, y + offset*0,
-                    x + offset*11, y + offset*1, x + offset*10, y + offset*1,
-                    x + offset*10, y + offset*0, x + offset*11, y + offset*0,
-                    x + offset*8, y + offset*0, x + offset*9, y + offset*0,
-                    x + offset*9, y + offset*1, x + offset*8, y + offset*1,
-                    x + offset*9, y + offset*1, x + offset*8, y + offset*1,
-                    x + offset*8, y + offset*0, x + offset*9, y + offset*0,
-                    x + offset*8, y + offset*0, x + offset*9, y + offset*0,
-                    x + offset*9, y + offset*1, x + offset*8, y + offset*1,
-                    x + offset*8, y + offset*0, x + offset*9, y + offset*0,
-                    x + offset*9, y + offset*1, x + offset*8, y + offset*1
-                };
+                //TOP
+                if(visibleSurfaces[0])
+                {
+                    float bottom[] = {x + offset*10, y + offset*1, x + offset*9, y + offset*1,
+                    x + offset*9, y + offset*0, x + offset*10, y + offset*0};
+                    System.arraycopy(bottom, 0, texCube, index, 8);
+                    index +=8;
+                }
+                //BOTTOM
+                if(visibleSurfaces[1])
+                {
+                    float top[] = {x + offset*11, y + offset*1, x + offset*10, y + offset*1,
+                    x + offset*10, y + offset*0, x + offset*11, y + offset*0};
+                    System.arraycopy(top, 0, texCube, index, 8);
+                    index +=8;
+                }
+                //FRONT
+                if(visibleSurfaces[2])
+                {
+                    float front[] = {x + offset*8, y + offset*0, x + offset*9, y + offset*0,
+                    x + offset*9, y + offset*1, x + offset*8, y + offset*1};
+                    System.arraycopy(front, 0, texCube, index, 8);
+                    index +=8;
+                }
+                //BACK
+                if(visibleSurfaces[3])
+                {
+                    float back[] = {x + offset*9, y + offset*1, x + offset*8, y + offset*1,
+                    x + offset*8, y + offset*0, x + offset*9, y + offset*0};
+                    System.arraycopy(back, 0, texCube, index, 8);
+                    index +=8;
+                }
+                //LEFT
+                if(visibleSurfaces[4])
+                {
+                    float left[] = {x + offset*8, y + offset*0, x + offset*9, y + offset*0,
+                    x + offset*9, y + offset*1, x + offset*8, y + offset*1};
+                    System.arraycopy(left, 0, texCube, index, 8);
+                    index +=8;
+                }
+                //RIGHT
+                if(visibleSurfaces[5])
+                {
+                    float right[] = {x + offset*8, y + offset*0, x + offset*9, y + offset*0,
+                    x + offset*9, y + offset*1, x + offset*8, y + offset*1};
+                    System.arraycopy(right, 0, texCube, index, 8);
+                }
+                return texCube;
+//                return new float[]{
+//                    x + offset*10, y + offset*1, x + offset*9, y + offset*1,
+//                    x + offset*9, y + offset*0, x + offset*10, y + offset*0,
+//                    x + offset*11, y + offset*1, x + offset*10, y + offset*1,
+//                    x + offset*10, y + offset*0, x + offset*11, y + offset*0,
+//                    x + offset*8, y + offset*0, x + offset*9, y + offset*0,
+//                    x + offset*9, y + offset*1, x + offset*8, y + offset*1,
+//                    x + offset*9, y + offset*1, x + offset*8, y + offset*1,
+//                    x + offset*8, y + offset*0, x + offset*9, y + offset*0,
+//                    x + offset*8, y + offset*0, x + offset*9, y + offset*0,
+//                    x + offset*9, y + offset*1, x + offset*8, y + offset*1,
+//                    x + offset*8, y + offset*0, x + offset*9, y + offset*0,
+//                    x + offset*9, y + offset*1, x + offset*8, y + offset*1
+//                };
         }
     }
     public boolean containsWorldPoint(float worldX, float worldY, float worldZ) {
@@ -502,3 +991,4 @@ public class Chunk {
     return false;
 }
 }
+
