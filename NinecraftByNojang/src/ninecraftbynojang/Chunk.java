@@ -417,38 +417,6 @@ public class Chunk {
         
         return cube;
         
-//        return new float[]{
-//            // TOP Of Block QUAD
-//            x + offset, y + offset, z + offset,
-//            x - offset, y + offset, z + offset,
-//            x - offset, y + offset, z - offset,
-//            x + offset, y + offset, z - offset,
-//            // BOTTOM QUAD
-//            x + offset, y - offset, z - offset,
-//            x - offset, y - offset, z - offset,
-//            x - offset, y - offset, z + offset,
-//            x + offset, y - offset, z + offset,
-//            // FRONT QUAD
-//            x + offset, y + offset, z - offset,
-//            x - offset, y + offset, z - offset,
-//            x - offset, y - offset, z - offset,
-//            x + offset, y - offset, z - offset,
-//            // BACK QUAD
-//            x + offset, y - offset, z + offset,
-//            x - offset, y - offset, z + offset,
-//            x - offset, y + offset, z + offset,
-//            x + offset, y + offset, z + offset,
-//            // LEFT QUAD
-//            x - offset, y + offset, z - offset,
-//            x - offset, y + offset, z + offset,
-//            x - offset, y - offset, z + offset,
-//            x - offset, y - offset, z - offset,
-//            // RIGHT QUAD
-//            x + offset, y + offset, z + offset,
-//            x + offset, y + offset, z - offset,
-//            x + offset, y - offset, z - offset,
-//            x + offset, y - offset, z + offset
-//        };
     }
 
     private float[] getCubeColor(Block block) {
@@ -523,30 +491,8 @@ public class Chunk {
                     System.arraycopy(bottom, 0, texCube, index, 8);
                 }
                 return texCube;
-                
-//                return new float[]{
-//                    // BOTTOM
-//                    x + offset*3, y + offset*10, x + offset*2, y + offset*10,
-//                    x + offset*2, y + offset*9, x + offset*3, y + offset*9,
-//                    // TOP
-//                    x + offset*3, y + offset*1, x + offset*2, y + offset*1,
-//                    x + offset*2, y + offset*0, x + offset*3, y + offset*0,
-//                    // FRONT
-//                    x + offset*3, y + offset*0, x + offset*4, y + offset*0,
-//                    x + offset*4, y + offset*1, x + offset*3, y + offset*1,
-//                    // BACK
-//                    x + offset*4, y + offset*1, x + offset*3, y + offset*1,
-//                    x + offset*3, y + offset*0, x + offset*4, y + offset*0,
-//                    // LEFT
-//                    x + offset*3, y + offset*0, x + offset*4, y + offset*0,
-//                    x + offset*4, y + offset*1, x + offset*3, y + offset*1,
-//                    // RIGHT
-//                    x + offset*3, y + offset*0, x + offset*4, y + offset*0,
-//                    x + offset*4, y + offset*1, x + offset*3, y + offset*1
-//                };
 
             case 1: // Dirt
-                //TOP
                 if(visibleSurfaces[0])
                 {
                     float bottom[] = {x + offset*3, y + offset*1, x + offset*2, y + offset*1,
@@ -554,7 +500,6 @@ public class Chunk {
                     System.arraycopy(bottom, 0, texCube, index, 8);
                     index +=8;
                 }
-                //BOTTOM
                 if(visibleSurfaces[1])
                 {
                     float top[] = {x + offset*3, y + offset*1, x + offset*2, y + offset*1,
@@ -562,7 +507,6 @@ public class Chunk {
                     System.arraycopy(top, 0, texCube, index, 8);
                     index +=8;
                 }
-                //FRONT
                 if(visibleSurfaces[2])
                 {
                     float front[] = {x + offset*2, y + offset*0, x + offset*3, y + offset*0,
@@ -570,7 +514,6 @@ public class Chunk {
                     System.arraycopy(front, 0, texCube, index, 8);
                     index +=8;
                 }
-                //BACK
                 if(visibleSurfaces[3])
                 {
                     float bottom[] = {x + offset*3, y + offset*1, x + offset*2, y + offset*1,
@@ -578,7 +521,6 @@ public class Chunk {
                     System.arraycopy(bottom, 0, texCube, index, 8);
                     index +=8;
                 }
-                //LEFT
                 if(visibleSurfaces[4])
                 {
                     float bottom[] = {x + offset*2, y + offset*0, x + offset*3, y + offset*0,
@@ -586,7 +528,6 @@ public class Chunk {
                     System.arraycopy(bottom, 0, texCube, index, 8);
                     index +=8;
                 }
-                //RIGHT
                 if(visibleSurfaces[5])
                 {
                     float bottom[] = {x + offset*2, y + offset*0, x + offset*3, y + offset*0,
@@ -594,23 +535,8 @@ public class Chunk {
                     System.arraycopy(bottom, 0, texCube, index, 8);
                 }
                 return texCube;
-//                return new float[]{
-//                    x + offset*3, y + offset*1, x + offset*2, y + offset*1,
-//                    x + offset*2, y + offset*0, x + offset*3, y + offset*0,
-//                    x + offset*3, y + offset*1, x + offset*2, y + offset*1,
-//                    x + offset*2, y + offset*0, x + offset*3, y + offset*0,
-//                    x + offset*2, y + offset*0, x + offset*3, y + offset*0,
-//                    x + offset*3, y + offset*1, x + offset*2, y + offset*1,
-//                    x + offset*3, y + offset*1, x + offset*2, y + offset*1,
-//                    x + offset*2, y + offset*0, x + offset*3, y + offset*0,
-//                    x + offset*2, y + offset*0, x + offset*3, y + offset*0,
-//                    x + offset*3, y + offset*1, x + offset*2, y + offset*1,
-//                    x + offset*2, y + offset*0, x + offset*3, y + offset*0,
-//                    x + offset*3, y + offset*1, x + offset*2, y + offset*1
-//                };
 
             case 2: // Water
-                //TOP
                 if(visibleSurfaces[0])
                 {
                     float bottom[] = {x + offset*15, y + offset*12, x + offset*14, y + offset*12,
@@ -618,7 +544,6 @@ public class Chunk {
                     System.arraycopy(bottom, 0, texCube, index, 8);
                     index +=8;
                 }
-                //BOTTOM
                 if(visibleSurfaces[1])
                 {
                     float top[] = {x + offset*15, y + offset*13, x + offset*14, y + offset*13,
@@ -626,7 +551,6 @@ public class Chunk {
                     System.arraycopy(top, 0, texCube, index, 8);
                     index +=8;
                 }
-                //FRONT
                 if(visibleSurfaces[2])
                 {
                     float front[] = {x + offset*14, y + offset*12, x + offset*15, y + offset*12,
@@ -634,7 +558,6 @@ public class Chunk {
                     System.arraycopy(front, 0, texCube, index, 8);
                     index +=8;
                 }
-                //BACK
                 if(visibleSurfaces[3])
                 {
                     float back[] = {x + offset*15, y + offset*13, x + offset*14, y + offset*13,
@@ -642,7 +565,6 @@ public class Chunk {
                     System.arraycopy(back, 0, texCube, index, 8);
                     index +=8;
                 }
-                //LEFT
                 if(visibleSurfaces[4])
                 {
                     float left[] = {x + offset*14, y + offset*12, x + offset*15, y + offset*12,
@@ -650,7 +572,6 @@ public class Chunk {
                     System.arraycopy(left, 0, texCube, index, 8);
                     index +=8;
                 }
-                //RIGHT
                 if(visibleSurfaces[5])
                 {
                     float right[] = {x + offset*14, y + offset*12, x + offset*15, y + offset*12,
@@ -658,23 +579,8 @@ public class Chunk {
                     System.arraycopy(right, 0, texCube, index, 8);
                 }
                 return texCube;
-//                return new float[]{
-//                    x + offset*15, y + offset*12, x + offset*14, y + offset*12,
-//                    x + offset*14, y + offset*13, x + offset*15, y + offset*13,
-//                    x + offset*15, y + offset*13, x + offset*14, y + offset*13,
-//                    x + offset*14, y + offset*12, x + offset*15, y + offset*12,
-//                    x + offset*14, y + offset*12, x + offset*15, y + offset*12,
-//                    x + offset*15, y + offset*13, x + offset*14, y + offset*13,
-//                    x + offset*15, y + offset*13, x + offset*14, y + offset*13,
-//                    x + offset*14, y + offset*12, x + offset*15, y + offset*12,
-//                    x + offset*14, y + offset*12, x + offset*15, y + offset*12,
-//                    x + offset*15, y + offset*13, x + offset*14, y + offset*13,
-//                    x + offset*14, y + offset*12, x + offset*15, y + offset*12,
-//                    x + offset*15, y + offset*13, x + offset*14, y + offset*13
-//                };
 
             case 3: // Sand
-                //TOP
                 if(visibleSurfaces[0])
                 {
                     float bottom[] = {x + offset*3, y + offset*2, x + offset*2, y + offset*2,
@@ -682,7 +588,6 @@ public class Chunk {
                     System.arraycopy(bottom, 0, texCube, index, 8);
                     index +=8;
                 }
-                //BOTTOM
                 if(visibleSurfaces[1])
                 {
                     float top[] = {x + offset*3, y + offset*2, x + offset*2, y + offset*2,
@@ -690,7 +595,6 @@ public class Chunk {
                     System.arraycopy(top, 0, texCube, index, 8);
                     index +=8;
                 }
-                //FRONT
                 if(visibleSurfaces[2])
                 {
                     float front[] = {x + offset*2, y + offset*1, x + offset*3, y + offset*1,
@@ -698,7 +602,6 @@ public class Chunk {
                     System.arraycopy(front, 0, texCube, index, 8);
                     index +=8;
                 }
-                //BACK
                 if(visibleSurfaces[3])
                 {
                     float back[] = {x + offset*3, y + offset*2, x + offset*2, y + offset*2,
@@ -706,7 +609,6 @@ public class Chunk {
                     System.arraycopy(back, 0, texCube, index, 8);
                     index +=8;
                 }
-                //LEFT
                 if(visibleSurfaces[4])
                 {
                     float left[] = {x + offset*2, y + offset*1, x + offset*3, y + offset*1,
@@ -714,7 +616,6 @@ public class Chunk {
                     System.arraycopy(left, 0, texCube, index, 8);
                     index +=8;
                 }
-                //RIGHT
                 if(visibleSurfaces[5])
                 {
                     float right[] = {x + offset*2, y + offset*1, x + offset*3, y + offset*1,
@@ -722,23 +623,8 @@ public class Chunk {
                     System.arraycopy(right, 0, texCube, index, 8);
                 }
                 return texCube;
-//                return new float[]{
-//                    x + offset*3, y + offset*2, x + offset*2, y + offset*2,
-//                    x + offset*2, y + offset*1, x + offset*3, y + offset*1,
-//                    x + offset*3, y + offset*2, x + offset*2, y + offset*2,
-//                    x + offset*2, y + offset*1, x + offset*3, y + offset*1,
-//                    x + offset*2, y + offset*1, x + offset*3, y + offset*1,
-//                    x + offset*3, y + offset*2, x + offset*2, y + offset*2,
-//                    x + offset*3, y + offset*2, x + offset*2, y + offset*2,
-//                    x + offset*2, y + offset*1, x + offset*3, y + offset*1,
-//                    x + offset*2, y + offset*1, x + offset*3, y + offset*1,
-//                    x + offset*3, y + offset*2, x + offset*2, y + offset*2,
-//                    x + offset*2, y + offset*1, x + offset*3, y + offset*1,
-//                    x + offset*3, y + offset*2, x + offset*2, y + offset*2
-//                };
 
             case 4: // Stone
-                //TOP
                 if(visibleSurfaces[0])
                 {
                     float bottom[] = {x + offset*2, y + offset*1, x + offset*1, y + offset*1,
@@ -746,7 +632,6 @@ public class Chunk {
                     System.arraycopy(bottom, 0, texCube, index, 8);
                     index +=8;
                 }
-                //BOTTOM
                 if(visibleSurfaces[1])
                 {
                     float top[] = {x + offset*2, y + offset*1, x + offset*1, y + offset*1,
@@ -754,7 +639,6 @@ public class Chunk {
                     System.arraycopy(top, 0, texCube, index, 8);
                     index +=8;
                 }
-                //FRONT
                 if(visibleSurfaces[2])
                 {
                     float front[] = {x + offset*1, y + offset*0, x + offset*2, y + offset*0,
@@ -762,7 +646,6 @@ public class Chunk {
                     System.arraycopy(front, 0, texCube, index, 8);
                     index +=8;
                 }
-                //BACK
                 if(visibleSurfaces[3])
                 {
                     float back[] = {x + offset*2, y + offset*1, x + offset*1, y + offset*1,
@@ -770,7 +653,6 @@ public class Chunk {
                     System.arraycopy(back, 0, texCube, index, 8);
                     index +=8;
                 }
-                //LEFT
                 if(visibleSurfaces[4])
                 {
                     float left[] = {x + offset*1, y + offset*0, x + offset*2, y + offset*0,
@@ -778,7 +660,6 @@ public class Chunk {
                     System.arraycopy(left, 0, texCube, index, 8);
                     index +=8;
                 }
-                //RIGHT
                 if(visibleSurfaces[5])
                 {
                     float right[] = {x + offset*1, y + offset*0, x + offset*2, y + offset*0,
@@ -786,23 +667,8 @@ public class Chunk {
                     System.arraycopy(right, 0, texCube, index, 8);
                 }
                 return texCube;
-//                return new float[]{
-//                    x + offset*2, y + offset*1, x + offset*1, y + offset*1,
-//                    x + offset*1, y + offset*0, x + offset*2, y + offset*0,
-//                    x + offset*2, y + offset*1, x + offset*1, y + offset*1,
-//                    x + offset*1, y + offset*0, x + offset*2, y + offset*0,
-//                    x + offset*1, y + offset*0, x + offset*2, y + offset*0,
-//                    x + offset*2, y + offset*1, x + offset*1, y + offset*1,
-//                    x + offset*2, y + offset*1, x + offset*1, y + offset*1,
-//                    x + offset*1, y + offset*0, x + offset*2, y + offset*0,
-//                    x + offset*1, y + offset*0, x + offset*2, y + offset*0,
-//                    x + offset*2, y + offset*1, x + offset*1, y + offset*1,
-//                    x + offset*1, y + offset*0, x + offset*2, y + offset*0,
-//                    x + offset*2, y + offset*1, x + offset*1, y + offset*1
-//                };
 
             case 5: // Bedrock
-                //TOP
                 if(visibleSurfaces[0])
                 {
                     float bottom[] = {x + offset*2, y + offset*2, x + offset*1, y + offset*2,
@@ -810,7 +676,6 @@ public class Chunk {
                     System.arraycopy(bottom, 0, texCube, index, 8);
                     index +=8;
                 }
-                //BOTTOM
                 if(visibleSurfaces[1])
                 {
                     float top[] = {x + offset*2, y + offset*2, x + offset*1, y + offset*2,
@@ -818,7 +683,6 @@ public class Chunk {
                     System.arraycopy(top, 0, texCube, index, 8);
                     index +=8;
                 }
-                //FRONT
                 if(visibleSurfaces[2])
                 {
                     float front[] = {x + offset*1, y + offset*1, x + offset*2, y + offset*1,
@@ -826,7 +690,6 @@ public class Chunk {
                     System.arraycopy(front, 0, texCube, index, 8);
                     index +=8;
                 }
-                //BACK
                 if(visibleSurfaces[3])
                 {
                     float back[] = {x + offset*2, y + offset*2, x + offset*1, y + offset*2,
@@ -834,7 +697,6 @@ public class Chunk {
                     System.arraycopy(back, 0, texCube, index, 8);
                     index +=8;
                 }
-                //LEFT
                 if(visibleSurfaces[4])
                 {
                     float left[] = {x + offset*1, y + offset*1, x + offset*2, y + offset*1,
@@ -842,7 +704,6 @@ public class Chunk {
                     System.arraycopy(left, 0, texCube, index, 8);
                     index +=8;
                 }
-                //RIGHT
                 if(visibleSurfaces[5])
                 {
                     float right[] = {x + offset*1, y + offset*1, x + offset*2, y + offset*1,
@@ -850,23 +711,8 @@ public class Chunk {
                     System.arraycopy(right, 0, texCube, index, 8);
                 }
                 return texCube;
-//                return new float[]{
-//                    x + offset*2, y + offset*2, x + offset*1, y + offset*2,
-//                    x + offset*1, y + offset*1, x + offset*2, y + offset*1,
-//                    x + offset*2, y + offset*2, x + offset*1, y + offset*2,
-//                    x + offset*1, y + offset*1, x + offset*2, y + offset*1,
-//                    x + offset*1, y + offset*1, x + offset*2, y + offset*1,
-//                    x + offset*2, y + offset*2, x + offset*1, y + offset*2,
-//                    x + offset*2, y + offset*2, x + offset*1, y + offset*2,
-//                    x + offset*1, y + offset*1, x + offset*2, y + offset*1,
-//                    x + offset*1, y + offset*1, x + offset*2, y + offset*1,
-//                    x + offset*2, y + offset*2, x + offset*1, y + offset*2,
-//                    x + offset*1, y + offset*1, x + offset*2, y + offset*1,
-//                    x + offset*2, y + offset*2, x + offset*1, y + offset*2
-//                };
 
             default: // Default (TNT-like)
-                //TOP
                 if(visibleSurfaces[0])
                 {
                     float bottom[] = {x + offset*10, y + offset*1, x + offset*9, y + offset*1,
@@ -874,7 +720,6 @@ public class Chunk {
                     System.arraycopy(bottom, 0, texCube, index, 8);
                     index +=8;
                 }
-                //BOTTOM
                 if(visibleSurfaces[1])
                 {
                     float top[] = {x + offset*11, y + offset*1, x + offset*10, y + offset*1,
@@ -882,7 +727,6 @@ public class Chunk {
                     System.arraycopy(top, 0, texCube, index, 8);
                     index +=8;
                 }
-                //FRONT
                 if(visibleSurfaces[2])
                 {
                     float front[] = {x + offset*8, y + offset*0, x + offset*9, y + offset*0,
@@ -890,7 +734,6 @@ public class Chunk {
                     System.arraycopy(front, 0, texCube, index, 8);
                     index +=8;
                 }
-                //BACK
                 if(visibleSurfaces[3])
                 {
                     float back[] = {x + offset*9, y + offset*1, x + offset*8, y + offset*1,
@@ -898,7 +741,6 @@ public class Chunk {
                     System.arraycopy(back, 0, texCube, index, 8);
                     index +=8;
                 }
-                //LEFT
                 if(visibleSurfaces[4])
                 {
                     float left[] = {x + offset*8, y + offset*0, x + offset*9, y + offset*0,
@@ -906,7 +748,6 @@ public class Chunk {
                     System.arraycopy(left, 0, texCube, index, 8);
                     index +=8;
                 }
-                //RIGHT
                 if(visibleSurfaces[5])
                 {
                     float right[] = {x + offset*8, y + offset*0, x + offset*9, y + offset*0,
@@ -914,20 +755,6 @@ public class Chunk {
                     System.arraycopy(right, 0, texCube, index, 8);
                 }
                 return texCube;
-//                return new float[]{
-//                    x + offset*10, y + offset*1, x + offset*9, y + offset*1,
-//                    x + offset*9, y + offset*0, x + offset*10, y + offset*0,
-//                    x + offset*11, y + offset*1, x + offset*10, y + offset*1,
-//                    x + offset*10, y + offset*0, x + offset*11, y + offset*0,
-//                    x + offset*8, y + offset*0, x + offset*9, y + offset*0,
-//                    x + offset*9, y + offset*1, x + offset*8, y + offset*1,
-//                    x + offset*9, y + offset*1, x + offset*8, y + offset*1,
-//                    x + offset*8, y + offset*0, x + offset*9, y + offset*0,
-//                    x + offset*8, y + offset*0, x + offset*9, y + offset*0,
-//                    x + offset*9, y + offset*1, x + offset*8, y + offset*1,
-//                    x + offset*8, y + offset*0, x + offset*9, y + offset*0,
-//                    x + offset*9, y + offset*1, x + offset*8, y + offset*1
-//                };
         }
     }
     public boolean containsWorldPoint(float worldX, float worldY, float worldZ) {
