@@ -31,6 +31,7 @@ public class FPcameraController {
     private boolean leftMouseWasDown = false;
     private boolean rightMouseWasDown = false;
     private boolean FKeyWasDown = false;
+    private Block.BlockType selectedBlock = Block.BlockType.BlockType_Grass;
     
     // Physics variables
     private float velocityY = 0.0f;
@@ -54,7 +55,7 @@ public class FPcameraController {
         lPosition.y = 0f; 
         lPosition.z = 80f;
         velocityY = 0; // Start with no velocity
-        isFlying = true; // Start in fly mode to avoid being stuck in blocks
+        isFlying = false; 
     }
     //increment the camera's current yaw rotation
     public void yaw(float amount)
@@ -393,7 +394,7 @@ public class FPcameraController {
         if (hitBlock) {
             int[] placePos = currentChunk.worldToBlock(lastValidWorldX, lastValidWorldY, lastValidWorldZ);
             if (placePos != null) {
-                currentChunk.placeBlock(placePos[0], placePos[1], placePos[2], Block.BlockType.BlockType_Grass);
+                currentChunk.placeBlock(placePos[0], placePos[1], placePos[2], selectedBlock);
             }
         }
     }
@@ -409,10 +410,6 @@ public class FPcameraController {
         
         currentChunk = new Chunk(0,0,0);
         
-        // Start at a higher position to avoid being inside blocks
-        position.y = -50;
-        position.x = 0;
-        position.z = 0;
         
         Mouse.setGrabbed(true);
         
@@ -423,6 +420,7 @@ public class FPcameraController {
         System.out.println("WASD - Move");
         System.out.println("Left Click - Break Block");
         System.out.println("Right Click - Place Block");
+        System.out.println("1-5 - Select Placed Block Type");
         System.out.println("=================");
         
         while (!Display.isCloseRequested() &&
@@ -435,11 +433,6 @@ public class FPcameraController {
             
             dx = Mouse.getDX();
             dy = Mouse.getDY();
-            
-            // Toggle fly mode with F key
-            if (Keyboard.isKeyDown(Keyboard.KEY_F) && !Keyboard.isKeyDown(Keyboard.KEY_F)) {
-                // This would trigger once, but we need a proper key press handler
-            }
             
             float currentSpeed = movementSpeed;
             if (!isFlying && isInWater) {
@@ -481,7 +474,7 @@ public class FPcameraController {
                     if (Keyboard.isKeyDown(Keyboard.KEY_R)) {
                         moveUp(moveAmount * 2);
                     }
-                    if (Keyboard.isKeyDown(Keyboard.KEY_F)) {
+                    if (Keyboard.isKeyDown(Keyboard.KEY_LSHIFT)) {
                         moveDown(moveAmount);
                     }
                 }
@@ -501,6 +494,14 @@ public class FPcameraController {
             }
             FKeyWasDown = fKeyDown;
             
+            // Block selection
+            selectBlock(Keyboard.KEY_1, Block.BlockType.BlockType_Grass, "GRASS");
+            selectBlock(Keyboard.KEY_2, Block.BlockType.BlockType_Dirt, "DIRT");
+            selectBlock(Keyboard.KEY_3, Block.BlockType.BlockType_Sand, "SAND");
+            selectBlock(Keyboard.KEY_4, Block.BlockType.BlockType_Stone, "STONE");
+            selectBlock(Keyboard.KEY_5, Block.BlockType.BlockType_Default, "TNT");
+            
+            
             // Block breaking
             boolean leftMouseDown = Mouse.isButtonDown(0);
             if (leftMouseDown && !leftMouseWasDown) {
@@ -514,6 +515,7 @@ public class FPcameraController {
                 placeBlockInFront();
             }
             rightMouseWasDown = rightMouseDown;
+            
             
             // Apply gravity (if not flying)
             applyGravity(dt);
@@ -530,5 +532,14 @@ public class FPcameraController {
             Display.sync(60);
         }
         Display.destroy();
+    }
+    
+    void selectBlock(int key, Block.BlockType block, String type)
+    {
+        if(Keyboard.isKeyDown(key) && selectedBlock != block)
+        {
+            System.out.println("SELECTED BLOCK: " + type);
+            selectedBlock = block;
+        }
     }
 }
