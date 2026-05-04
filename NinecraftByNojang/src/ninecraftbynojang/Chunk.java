@@ -65,7 +65,7 @@ public class Chunk {
         int seed = r.nextInt(1000000);
         SimplexNoise noise = new SimplexNoise(largestFeature, persistence, seed);
 
-        final int SEA_LEVEL = (int) (CHUNK_SIZE * 0.45f);
+        final int SEA_LEVEL = (int) (CHUNK_SIZE * 0.45f); //Halfway up chunk
 
         
 
@@ -126,7 +126,7 @@ public class Chunk {
         if (solidVBOVertexHandle != 0) glDeleteBuffers(solidVBOVertexHandle);
         if (solidVBOColorHandle != 0) glDeleteBuffers(solidVBOColorHandle);
         if (solidVBOTextureHandle != 0) glDeleteBuffers(solidVBOTextureHandle);
-
+        //2nd vertex buffers for water to render with Alpha transparency
         if (waterVBOVertexHandle != 0) glDeleteBuffers(waterVBOVertexHandle);
         if (waterVBOColorHandle != 0) glDeleteBuffers(waterVBOColorHandle);
         if (waterVBOTextureHandle != 0) glDeleteBuffers(waterVBOTextureHandle);
@@ -155,7 +155,7 @@ public class Chunk {
         solidVertexCount = 0;
         waterVertexCount = 0;
         // Build VBO buffers(Mesh the block)
-        //Back face culling could eb implemented here i believe
+        //Visible surface detection below
         for (int x = 0; x < CHUNK_SIZE; x++) {
             for (int y = 0; y < CHUNK_SIZE; y++) {
                 for (int z = 0; z < CHUNK_SIZE; z++) {
@@ -166,13 +166,14 @@ public class Chunk {
                     if (block == null || !block.isActive()) {
                         continue;
                     }
-
+                    //world = starting offset + local array position * block size
                     float worldX = startX + x * CUBE_LENGTH;
                     float worldY = startY + y * CUBE_LENGTH;
                     float worldZ = startZ + z * CUBE_LENGTH;
                     
                     if(block.getType() == Block.BlockType.BlockType_Water)
-                    {
+                    { //For water block, check if block neighbor exists. 
+                        //If block exists next door, do not render face
                         //TOP
                         if(getBlock(x, y+1, z) != null)
                             visibleSurfaces[0] = false;
@@ -193,7 +194,8 @@ public class Chunk {
                             visibleSurfaces[5] = false;
                     }
                     else
-                    {
+                    {//For solid blocks, If neighbor exists or is water, render face
+                        //Otherwise, disable
                         //TOP
                         if(getBlock(x, y+1, z) != null && 
                             getBlock(x, y+1, z).getType() != Block.BlockType.BlockType_Water)
@@ -219,7 +221,7 @@ public class Chunk {
                             getBlock(x+1, y, z).getType() != Block.BlockType.BlockType_Water)
                                 visibleSurfaces[5] = false; 
                     } 
-                    
+                    //for each visible surface, count the vertices
                     for(boolean surfaces: visibleSurfaces)
                     {
                         if(surfaces)
@@ -227,7 +229,7 @@ public class Chunk {
                     }
                     
                     if(vertices !=0)
-                    {
+                    {//Track vertices in the buffers
                         if (block.getType() == Block.BlockType.BlockType_Water) {
                         waterVertexPositionData.put(createCube(worldX, worldY, worldZ, visibleSurfaces));
                         waterVertexColorData.put(createCubeVertexCol(getCubeColor(block), vertices));
@@ -250,7 +252,7 @@ public class Chunk {
         solidVertexColorData.flip();
         solidVertexTextureData.flip();
 
-        waterVertexPositionData.flip();
+        waterVertexPositionData.flip(); //Feature 3
         waterVertexColorData.flip();
         waterVertexTextureData.flip();
 
@@ -323,7 +325,7 @@ public class Chunk {
     }
 
 
-    // ====================== Helper Methods ======================
+    //Helpers
 
     private float[] createCubeVertexCol(float[] cubeColorArray, int vertices) {
         float[] cubeColors = new float[vertices * 4]; // 24 vertices, RGBA
@@ -351,6 +353,7 @@ public class Chunk {
         float cube[] = new float[quad];
        
         int index = 0;
+        //Only stores visible faces
         // TOP Of Block QUAD
         if(visibleSurfaces[0])
         {
@@ -421,7 +424,7 @@ public class Chunk {
 
     private float[] getCubeColor(Block block) {
         if (block.getType() == Block.BlockType.BlockType_Water) {
-            return new float[]{1.0f, 1.0f, 1.0f, 0.45f}; //0.45 is the transparency
+            return new float[]{1.0f, 1.0f, 1.0f, 0.45f}; //0.45 is the alpha transparency variable, Feature 3
         }
         return new float[]{1.0f, 1.0f, 1.0f, 1.0f};
     }
@@ -804,17 +807,17 @@ public class Chunk {
     }
     
     public boolean placeBlock(int x, int y, int z, Block.BlockType type) {
-    if (x < 0 || x >= CHUNK_SIZE || y < 0 || y >= CHUNK_SIZE || z < 0 || z >= CHUNK_SIZE) {
+        if (x < 0 || x >= CHUNK_SIZE || y < 0 || y >= CHUNK_SIZE || z < 0 || z >= CHUNK_SIZE) {
+            return false;
+        }
+    
+        // Only place if position is empty
+        if (Blocks[x][y][z] == null) {
+            Blocks[x][y][z] = new Block(type);
+            Blocks[x][y][z].setActive(true);
+            rebuildMesh();
+            return true;
+        }
         return false;
     }
-    
-    // Only place if position is empty
-    if (Blocks[x][y][z] == null) {
-        Blocks[x][y][z] = new Block(type);
-        Blocks[x][y][z].setActive(true);
-        rebuildMesh();
-        return true;
-    }
-    return false;
-}
 }

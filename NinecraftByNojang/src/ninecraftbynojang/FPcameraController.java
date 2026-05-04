@@ -159,7 +159,7 @@ public class FPcameraController {
         }
     }
     
-    public void applyGravity(float deltaTime) {
+    public void applyGravity(float deltaTime) { //Feature 2
         // Skip gravity if flying
         if (isFlying) {
             velocityY = 0;
@@ -201,7 +201,7 @@ public class FPcameraController {
         if (position.y < -100) position.y = -100;
     }
     
-    private void checkWaterStatus() {
+    private void checkWaterStatus() { //Feature 2
         // Check around player's position for water blocks
         float checkY = -position.y; // Convert to block coordinate space
         
@@ -232,7 +232,7 @@ public class FPcameraController {
         }
     }
     
-    public void jump() {
+    public void jump() { //Feature 2
         if (isFlying) {
             // In fly mode, jump toggles flying up
             flyUp(FLY_SPEED * 0.1f);
@@ -255,7 +255,7 @@ public class FPcameraController {
         }
     }
     
-    private boolean checkCollision(Vector3f newPosition) {
+    private boolean checkCollision(Vector3f newPosition) { //Feature 2 
         // Skip collision detection in fly mode
         if (isFlying) return true;
         
@@ -325,7 +325,7 @@ public class FPcameraController {
         return new Vector3f( sinYaw * cosPitch, -sinPitch, -cosYaw * cosPitch);
     }
 
-    private void breakBlockInFront() {
+    private void breakBlockInFront() { //Feature 1: Left Click
         float reach = 5.0f;
         float step = 0.2f;
 
@@ -354,7 +354,7 @@ public class FPcameraController {
         }
     }
     
-    private void placeBlockInFront() {
+    private void placeBlockInFront() {//Feature 1.5 Right Click
         float reach = 5.0f;
         float step = 0.2f;
 
@@ -415,8 +415,8 @@ public class FPcameraController {
         
         System.out.println("=== CONTROLS ===");
         System.out.println("F - Toggle Fly Mode");
-        System.out.println("Space - Jump / Fly Up");
-        System.out.println("Shift - Sprint / Fly Down");
+        System.out.println("Space - Jump / Fly Up/ Swim up");
+        System.out.println("Shift - Sprint / Fly Down / Swim down");
         System.out.println("WASD - Move");
         System.out.println("Left Click - Break Block");
         System.out.println("Right Click - Place Block");
@@ -534,7 +534,8 @@ public class FPcameraController {
         Display.destroy();
     }
     
-    void selectBlock(int key, Block.BlockType block, String type)
+    void selectBlock(int key, Block.BlockType block, String type) //Feature 1.5, 
+            //Select with keyboard numbers
     {
         if(Keyboard.isKeyDown(key) && selectedBlock != block)
         {
